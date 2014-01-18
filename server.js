@@ -155,6 +155,7 @@ captifeye.get('/s/:sub/:id', function(req, res){
                             "username": rows[0].username,
                             "userid": rows[0].userid,
                             "heading": rows[0].name,
+                            "title": rows[0].title,
                             "text": rows[0].content,
                             "voted": rows[0].voted
                         };
@@ -169,6 +170,7 @@ captifeye.get('/s/:sub/:id', function(req, res){
                                 "username": rows[i].username,
                                 "userid": rows[i].userid,
                                 "heading": rows[i].name,
+                                "title": rows[i].title,
                                 "text": rows[i].content,
                                 "voted": rows[i].voted
                             });
@@ -360,7 +362,9 @@ console.log(title +", "+text +", "+subName +", "+user);
         db.get('SELECT * FROM subs WHERE name="'+subName+'";', function(subErr, sub){
             if(subErr || sub==undefined) res.send(404);
             else{
+                console.log();
                 db.run('INSERT INTO questions (title, content, userid, subid) VALUES ("'+title+'", "'+text+'", '+user.id+', '+sub.id+');', function(insertErr){
+                    console.log(insertErr);
                     if(insertErr) res.send(500);
                     else{
                         db.get('SELECT * FROM questions order by id desc limit 1;', function(err, newQuest){
