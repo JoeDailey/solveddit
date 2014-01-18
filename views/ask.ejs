@@ -25,6 +25,13 @@
 					dataType: "json",
 					complete: function(status){
 						console.log(status);
+						if(status.status == 404){
+							$(sub.parent()).addClass("has-error");
+						}
+					},
+					success: function(a,b,c){
+						console.log(a);
+						document.location.href = a.statusText;
 					}
 				});
 		});
