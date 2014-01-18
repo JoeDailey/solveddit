@@ -97,6 +97,7 @@ captifeye.get('/', function(req, res){
                             "username": rows[i].username,
                             "userid": rows[i].userid,
                             "heading": rows[i].name,
+                            "title": rows[i].title,
                             "text": rows[i].content,
                             "voted": rows[i].voted
                         });
@@ -132,7 +133,7 @@ captifeye.get('/user/:username', function(req, res){
                     db.all(query, function(err, rows){
                         if(err==null){//no error
                             for (var i = 0; i < rows.length; i++) {
-                                // console.log(rows[i]);
+                                console.log(rows[i]);
                                 questions.push({
                                     "id": rows[i].id,
                                     "username": rows[i].username,

@@ -10,10 +10,10 @@
 		<div class="right-half">&nbsp;<%=question.title%></div>
 	</div>
 	<div>
-		<button type="button" class="left-half btn btn-default">
+		<button type="button" class="left-half btn btn-default text-toggler">
 			<span class="glyphicon glyphicon-chevron-right"></span>
 		</button>
-		<div class="right-half" style="display:none;">&nbsp;<%=question.text%></div>	
+		<div class="right-half extra-text" style="display:none;">&nbsp;<%=question.text%></div>	
 	</div>
 	<script type="text/javascript">
 	$(function(){
@@ -37,6 +37,17 @@
 			  dataType: "json"
 			});
 			$(this).toggleClass("btn-success");
+		});
+		$(".text-toggler").click(function(){
+			if($($(this).children('.glyphicon')).hasClass("glyphicon-chevron-right")){
+				$($(this).children('.glyphicon')).removeClass('glyphicon-chevron-right');
+				$($(this).children('.glyphicon')).addClass('glyphicon-chevron-down');
+				$($($(this).parent()).children('.extra-text')).show();
+			}else{
+				$($(this).children('.glyphicon')).removeClass('glyphicon-chevron-down');
+				$($(this).children('.glyphicon')).addClass('glyphicon-chevron-right');
+				$($($(this).parent()).children('.extra-text')).hide();	
+			}
 		});
 		// var url = "/api/isvoted";
 		// var data = {
