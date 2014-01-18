@@ -1,38 +1,43 @@
 <%include part_head%>
 	<div class="form_container">
-		<div class="form_half">
-			<form action="/register" method="POST">
-				<div class="input-group">
-				  <span class="input-group-addon">:P</span>
+
+	<div class="row">
+		<div class="form_half col-md-6 ">
+			<h2>Sign Up</h2><br />
+			<form action="/register" method="POST" class="well">
+				<div class="form-group">
+				  <!-- <span class="form-group-addon">:P</span> -->
 				  <input type="text" class="form-control" name="username" placeholder="Username">
 				</div>
-				<div class="input-group">
-				  <span class="input-group-addon">@</span>
+				<!-- <div class="form-group">
+				  <span class="form-group-addon">@</span>
 				  <input type="email" class="form-control" name="email" placeholder="Email Address">
-				</div>
-				<div class="input-group">
-				  <span class="input-group-addon">*</span>
+				</div> -->
+				<div class="form-group">
+				  <!-- <span class="form-group-addon">*</span> -->
 				  <input type="password" class="form-control" name="password" placeholder="Password">
 				</div>
-				<div class="input-group">
-				  <span class="input-group-addon">*</span>
+				<div class="form-group">
+				  <!-- <span class="form-group-addon">*</span> -->
 				  <input type="password" class="form-control" name="passwordComf" placeholder="Confirm Password">
 				</div>
 				<button type="submit" class="btn btn-default">Submit</button>
 			</form>
 		</div>
-		<div class="form_half">
-			<form action="/login" method="POST">
-				<div class="input-group">
-				  <span class="input-group-addon">:P</span>
+		<div class="form_half col-md-6 ">
+		<h2>Login</h2><br />
+			<form action="/login" method="POST" class="well">
+				<div class="form-group">
+				  <!-- <span class="form-group-addon">:P</span> -->
 				  <input type="text" class="form-control" name="username" placeholder="Username">
 				</div>
-				<div class="input-group">
-				  <span class="input-group-addon">*</span>
+				<div class="form-group">
+				  <!-- <span class="form-group-addon">*</span> -->
 				  <input type="password" class="form-control" name="password" placeholder="Password">
 				</div>
 				<button type="submit" class="btn btn-default">Submit</button>
 			</form>
 		</div>
 	</div>
+</div>
 <%include part_foot%>
