@@ -77,8 +77,14 @@ captifeye.listen(9000);
 //---------------------------------------------/////-landing page
 captifeye.get('/', function(req, res){
     console.log("Sending base");
+    var content = '<div class="list-group">
+  <a href="#" class="list-group-item active">
+    <h4 class="list-group-item-heading">List group item heading</h4>
+    <p class="list-group-item-text">...</p>
+  </a>
+</div>';
     res.render("base", {
-        content:"Lucas, hi"
+        content: content
     });
 });
 //---------------------------------------------/////-signup + logins
