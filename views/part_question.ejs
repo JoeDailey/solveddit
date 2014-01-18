@@ -16,7 +16,13 @@
 				"userid": <%=question.userid%>,
 				"positive": 1
 			};
-			$.post(url,data);
+			$.ajax({
+			  type: "POST",
+			  context: document.body,
+			  url: url,
+			  data: data,
+			  dataType: "json"
+			});
 			$(this).addClass("btn-success");
 			console.log("adding");
 		});

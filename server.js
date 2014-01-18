@@ -193,11 +193,14 @@ captifeye.get('/logout', function(req, res){
 ///////////////////////////////////////////////////////////////////////////////////////////
 //API Start///////////////////////////////////////////////////////////////////////////////
 captifeye.post('/api/question/vote', function(req, res){
+    console.log("added");
     var questionid = req.body.questionid;
     var userid = req.body.userid;
     var positive = req.body.positive;
     db.serialize(function(){
-        db.run('INSERT INTO questionvotes (questionid, userid, positive) VALUES ('+questionid+', '+userid+', '+positive+')');
+        db.run('INSERT INTO questionvotes (questionid, userid, positive) VALUES ('+questionid+', '+userid+', '+positive+')',function(){
+                res.send({status:200});
+        });
     });
 });
 captifeye.post('/api/question/unvote', function(req, res){
@@ -205,7 +208,9 @@ captifeye.post('/api/question/unvote', function(req, res){
     var userid = req.body.userid;
     var positive = req.body.positive;
     db.serialize(function(){
-        db.run('DELETE FROM questionvotes WHERE questionid='+questionid+' AND userid='+userid+';');
+        db.run('DELETE FROM questionvotes WHERE questionid='+questionid+' AND userid='+userid+';',function(){
+                res.send({status:200});
+        });
     });
 });
 //API End///////////////////////////////////////////////////////////////////////////////////
