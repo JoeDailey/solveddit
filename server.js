@@ -100,7 +100,9 @@ captifeye.get('/', function(req, res){
 });
 //---------------------------------------------/////-signup + logins
 captifeye.get('/auth', function(req, res){
-    res.render("auth", {});
+    res.render("auth", {
+        user:"null"
+    });
 });
 //Routing End///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -163,7 +165,7 @@ captifeye.post("/register", function(req, res){
 });
 //---------------------------------------------/////-logout
 captifeye.get('/logout', function(req, res){
-  res.clearCookie('email');
+  res.clearCookie('name');
   res.redirect('/');
 });
 //Login/Logout END//////////////////////////////////////////////////////////////////////////
@@ -174,11 +176,13 @@ captifeye.get('/logout', function(req, res){
 ///////////////////////////////////////////////////////////////////////////////////////////
 //404 Error start/////////////////////////////////////////////////////////////////////////
 captifeye.get("*", function(req, res){
-    res.render('error', {
-        "user":JSON.stringify({username:"Lucas"}),
-        "errorNumber":404,
-        "errorMessage":"sorry, lulz"
-    });
+    getUser(req, function(user){
+        res.render('error', {
+            "user":user,
+            "errorNumber":404,
+            "errorMessage":"sorry, lulz"
+        });
+    })
 });
 //404 Error end/////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -186,20 +190,20 @@ captifeye.get("*", function(req, res){
 //base cookie check and navigation building
 var getUser = function(req, callback){
     if (req.signedCookies.name == undefined) {
-        callback(null);
+        callback("null");
     } else {
         db.serialize(function(){
             console.log("serialize");
-            db.get("SELECT * FROM users WHERE name='"+req.signedCookies.username+"';", function(err, user){
-                if(err) callback(null);
+            db.get("SELECT * FROM users WHERE name='"+req.signedCookies.name+"';", function(err, user){
+                if(err) callback("null");
                 else{
                      // db.all('SELECT * FROM questions WHERE notification=true;', function(err, notes){
                      //    if(err) callback(null);
                         // else{
                             var data = {
                                 "username":user.name,
-                                "notificationCount":notes.length,
-                                "points":0//user.points
+                                "notificationCount":0,//notes.length,
+                                "points":user.points
                             };
                             callback(data);
                         // }
