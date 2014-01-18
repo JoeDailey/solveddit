@@ -1,17 +1,21 @@
 <div class="panel panel-default">
   <div class="panel-heading">
-    <h3 class="panel-title"><a href="/s/<%=question.heading%>"><%=question.heading%></a></h3>
+    <h3 class="panel-title"><a href="/user/<%=question.heading%>"><%=question.heading%></a></h3>
   </div>
   <div class="panel-body">
-    <button type="button" class="btn btn-default <% if (question.voted) {%>  btn-success  <%}%>" id="upvote<%=question.id%>">
+    <button type="button" class="left-half btn btn-default <% if (question.voted) {%>  btn-success  <%}%>" id="upvote<%=question.id%>">
 	  <span class="glyphicon glyphicon-arrow-up"></span>
 	</button>
-		<%=question.text%>
+		<div class="right-half">&nbsp;<%=question.text%></div>
 	<script type="text/javascript">
 	$(function(){
 		$("#upvote<%=question.id%>").click(function(){
 			console.log(<%=question.id%>);
+			if ($(this).hasClass("btn-success")){
+			var url = "/api/question/unvote";
+		} else {
 			var url = "/api/question/vote";
+		}
 			var data = {
 				"questionid": <%=question.id%>,
 				"userid": <%=voterid%>,
@@ -24,7 +28,7 @@
 			  data: data,
 			  dataType: "json"
 			});
-			$(this).addClass("btn-success");
+			$(this).toggleClass("btn-success");
 		});
 		// var url = "/api/isvoted";
 		// var data = {

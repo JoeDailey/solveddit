@@ -2,7 +2,11 @@
 <script>
 	$(document).ready(function(){
 		if(user!=null){
+<<<<<<< HEAD
 			if(user.username == "<%= viewUserName %>"){
+=======
+			if(user.name == "<%=viewUserName%>"){
+>>>>>>> 81eb491c1577a688650b99d367756ae645c88289
 				$('.tab-content').append($('<div class="tab-pane fade" id="pane_ask">Ask A Question</div>'))
 				$('.nav-tabs').append($('<li id="tab_ask "><a href="#pane_ask" data-toggle="tab">Ask a Question</a></li>'));
 				$('#tab_ask a').click(function (e) {
@@ -25,6 +29,8 @@
 	<div class="col-md-12 ">
 		<h2><%= viewUserName %> <span style="float:right"> <%= viewUserPoints %> &bull; <strong><%= viewUserPointsEver %></strong></span></h2>
 	</div>
+</div>
+<div class="row">
 	<div class="well col-md-12 ">
 		<ul class="nav nav-tabs">
 			<li id="tab_questions" class="active"><a href="#pane_questions" data-toggle="tab">Questions</a></li>
@@ -32,7 +38,12 @@
 		</ul>
 		<!-- Tab panes -->
 		<div class="tab-content">
-			<div class="tab-pane fade active in" id="pane_questions">QUESTONs</div>
+			<div class="tab-pane fade active in" id="pane_questions">
+				<br />
+				<% questions.forEach(function(question){ %>
+				    <% include part_question %>
+				  <% }) %>
+			</div>
 			<div class="tab-pane fade" id="pane_answers">ANSERS</div>
 		</div>
 	</div>
