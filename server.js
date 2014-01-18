@@ -89,12 +89,13 @@ captifeye.get('/', function(req, res){
         var questions = []; 
         db.serialize(function(){
             var extra = 'EXISTS(SELECT * FROM questionvotes as qv WHERE qv.userid = "'+user.id+'" AND q.id=qv.questionid) as voted ';
-            var query = 'SELECT *, '+extra+' FROM questions as q INNER JOIN users as u on u.id = q.userid';
+            var query = 'SELECT *, q.id as goodid, '+extra+' FROM questions as q INNER JOIN users as u on u.id = q.userid';
+            console.log(query);
             db.all(query, function(err, rows){
                 if(err==null){//no error
                     for (var i = 0; i < rows.length; i++) {
                         questions.push({
-                            "id": rows[i].id,
+                            "id": rows[i].goodid,
                             "username": rows[i].username,
                             "userid": rows[i].userid,
                             "heading": rows[i].name,
@@ -380,6 +381,19 @@ console.log(title +", "+text +", "+subName +", "+user);
         });
     });
 });
+captifeye.post('/api/answer', function(req, res){
+    var text = req.body.text;
+    var questionid = req.body.questionid;
+    var user = JSON.parse(req.body.user);
+    db.serialize(function(){
+            db.run('INSERT INTO answers (content, userid, questionid) VALUES ("'+text+'", '+user.id+', '+questionid+');', function(insertErr){
+                if(insertErr) res.send(500);
+                else{
+                     res.send({statusCode:200});
+                 }
+            });
+        });
+    });
 //API End///////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
 //404 Error start/////////////////////////////////////////////////////////////////////////
