@@ -2,11 +2,7 @@
 <script>
 	$(document).ready(function(){
 		if(user!=null){
-<<<<<<< HEAD
-			if(user.username == "<%= viewUserName %>"){
-=======
 			if(user.name == "<%=viewUserName%>"){
->>>>>>> 81eb491c1577a688650b99d367756ae645c88289
 				$('.tab-content').append($('<div class="tab-pane fade" id="pane_ask">Ask A Question</div>'))
 				$('.nav-tabs').append($('<li id="tab_ask "><a href="#pane_ask" data-toggle="tab">Ask a Question</a></li>'));
 				$('#tab_ask a').click(function (e) {
