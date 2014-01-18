@@ -125,13 +125,23 @@ captifeye.get('/user/:username', function(req, res){
                 if(err || viewUser==undefined) res.render('error', {user:user, errorNumber:404, errorMessage:"This user does not exist."});
                 else
                     res.render('user', {
-                        user:user,
+                        user:JSON.stringify(user),
                         viewUserName:viewUser.name,
                         viewUserPoints:viewUser.points,
                         viewUserPointsEver:viewUser.points_ever,
                     });
             });
         });
+    });
+});
+captifeye.get('/ask', function(req, res){
+    getUser(req, function(user){
+        if(!user) res.redirect('/auth');
+        else{
+            res.render('ask', {
+                user:JSON.stringify(user)
+            })
+        }
     });
 });
 //Routing End///////////////////////////////////////////////////////////////////////////////
@@ -216,6 +226,24 @@ captifeye.post('/api/question/unvote', function(req, res){
     db.serialize(function(){
         db.run('DELETE FROM questionvotes WHERE questionid='+questionid+' AND userid='+userid+';', function(err){
             if(err) res.send({status:400}); else res.send({status:200});
+        });
+    });
+});
+captifeye.post('/api/ask', function(req, res){
+    var title = req.body.title;
+    var text = req.body.text;
+    var subName = req.body.sub;
+    var user = req.body.user;
+    db.serialize(function(){
+        db.get('SELECT * FROM subs WHERE name="'+subName+'";', function(subErr, sub){
+            if(subErr || sub==undefined) res.send(404);
+            else{
+                db.get('INSERT INTO questions (title, content, userid, subid) VALUES ("'+title+'", "'+text+'", '+user.id+', '+sub.id+'); SELECT * FROM questions order by id desc limit 1;', function(err, newQuest){
+                    if(err || newQuest==undefined) {console.log(newQuest); res.send(500);}
+                    else
+                        res.redirect('/'+subName+'/'+id2url(quest.id));
+                });
+            }
         });
     });
 });

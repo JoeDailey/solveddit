@@ -1,0 +1,52 @@
+<%include part_head%>
+<script type="text/javascript">
+	$(document).ready(function(){
+		$('#ask-form').submit(function(e){
+			e.preventDefault();
+			var hasError = false
+			$('.form-group').removeClass("has-error");
+			var title = $('#ask-title');
+			var text = $('#ask-text');
+			var sub = $('#ask-subforum');
+			if(title.val().length<1){hasError=true; $(title.parent()).addClass("has-error");}
+			if(text.val().length<1){hasError=true; $(text.parent()).addClass("has-error");}
+			if(sub.val().length<1){hasError=true; $(sub.parent()).addClass("has-error");}
+			if(!hasError)
+				$.ajax({
+					type: "POST",
+					context: document.body,
+					url: '/api/ask',
+					data: {
+						"title":title.val(),
+						"text":text.val(),
+						"sub":sub.val(),
+						"user":JSON.stringify(user)
+					},
+					dataType: "json",
+					complete: function(status){
+						console.log(status);
+					}
+				});
+		});
+	});
+</script>
+<div class="form_container">
+	<div class="row">
+		<div class=" col-md-12 ">
+			<h2>Ask a Question</h2><br />
+			<form id="ask-form" action="/ask" method="POST" class="well">
+				<div class="form-group">
+					<input type="text" class="form-control" id="ask-title" placeholder="Title">
+				</div>
+				<div class="form-group">
+					<input type="text" class="form-control" id="ask-subforum" placeholder="Subforum">
+				</div>
+				<div class="form-group">
+					<textarea class="form-control" id="ask-text" rows="3" placeholder="Describe your question in more detail"></textarea>
+				</div>
+				<button type="submit" class="btn btn-default">Submit</button>
+			</form>
+		</div
+	</div>
+</div>
+<%include part_foot%>
