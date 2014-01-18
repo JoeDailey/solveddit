@@ -10,7 +10,7 @@
 		<div class="right-half">&nbsp;<%=question.title%></div>
 	</div>
 	<div>
-		<button type="button" class="left-half btn btn-default text-toggler">
+		<button type="button" class="left-half btn btn-default text-toggler ">
 			<span class="glyphicon glyphicon-chevron-right"></span>
 		</button>
 		<div class="right-half extra-text" style="display:none;">&nbsp;<%=question.text%></div>	
@@ -49,18 +49,6 @@
 				$($($(this).parent()).children('.extra-text')).hide();	
 			}
 		});
-		// var url = "/api/isvoted";
-		// var data = {
-		// 	"questionid": <%=question.id%>,
-		// 	"userid": <%=question.userid%>
-		// };
-		// $.ajax({
-		//   url: url,
-		//   data: data,
-		//   success: function(){
-		//   	$("upvote<%=question.id%>").addClass("btn-success");
-		//   }
-		// });
 	}); 
 	</script>
   </div>
