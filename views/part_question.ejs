@@ -1,19 +1,19 @@
 <div class="panel panel-default">
   <div class="panel-heading">
-    <h3 class="panel-title"><a href="/user/<%=question.heading%>"><%=question.heading%></a></h3>
+    <h3 class="panel-title"><a href="/user/<%=question.heading%>"><%=question.heading%></a> asked on <a href="/s/<%=question.sub%>">/s/<%=question.sub%></a></h3>
   </div>
   <div class="panel-body">
 	<div>
 	    <button type="button" class="left-half btn btn-default <% if (question.voted) {%>  btn-success  <%}%>" id="upvote<%=question.id%>">
-			<span class="glyphicon glyphicon-arrow-up"></span>
+			<span class="glyphicon glyphicon-star"></span>
 		</button>
-		<div class="right-half">&nbsp;<%=question.title%></div>
+		<div class="right-half">&nbsp;<a href="/s/<%=question.sub%>/<%=question.id%>"><%=question.title%></a></div>
 	</div>
-	<div>
-		<button type="button" class="left-half btn btn-default text-toggler ">
-			<span class="glyphicon glyphicon-chevron-right"></span>
+	<div style="margin-top:3px;">
+		<button type="button" class="left-half btn btn-default text-toggler">
+			<span class="glyphicon <% if (question.hide) {%>glyphicon-chevron-right<%} else {%>glyphicon-chevron-down<%}%>"></span>
 		</button>
-		<div class="right-half extra-text" style="display:none;">&nbsp;<%=question.text%></div>	
+		<div class="right-half extra-text" <% if (question.hide) {%>style="display:none;"<%}%>>&nbsp;<%=question.text%></div>	
 	</div>
 	<script type="text/javascript">
 	$(function(){
@@ -38,18 +38,7 @@
 			});
 			$(this).toggleClass("btn-success");
 		});
-		$(".text-toggler").click(function(){
-			if($($(this).children('.glyphicon')).hasClass("glyphicon-chevron-right")){
-				$($(this).children('.glyphicon')).removeClass('glyphicon-chevron-right');
-				$($(this).children('.glyphicon')).addClass('glyphicon-chevron-down');
-				$($($(this).parent()).children('.extra-text')).show();
-			}else{
-				$($(this).children('.glyphicon')).removeClass('glyphicon-chevron-down');
-				$($(this).children('.glyphicon')).addClass('glyphicon-chevron-right');
-				$($($(this).parent()).children('.extra-text')).hide();	
-			}
-		});
-	}); 
+	});  
 	</script>
   </div>
 </div>
