@@ -1,8 +1,38 @@
 <div class="panel panel-default">
   <div class="panel-heading">
-    <h3 class="panel-title"><%=question.heading%></h3>
+    <h3 class="panel-title"><a href="/s/<%=question.heading%>"><%=question.heading%></a></h3>
   </div>
   <div class="panel-body">
-    <%=question.text%>
+    <button type="button" class="btn btn-default <% if (question.voted) {%>  btn-success  <%}%>" id="upvote<%=question.id%>">
+	  <span class="glyphicon glyphicon-arrow-up"></span>
+	</button>
+		<%=question.text%>
+	<script type="text/javascript">
+	$(function(){
+		$("#upvote<%=question.id%>").click(function(){
+			var url = "/api/vote";
+			var data = {
+				"questionid": <%=question.id%>,
+				"userid": <%=question.userid%>,
+				"positive": 1
+			};
+			$.post(url,data);
+			$(this).addClass("btn-success");
+			console.log("adding");
+		});
+		// var url = "/api/isvoted";
+		// var data = {
+		// 	"questionid": <%=question.id%>,
+		// 	"userid": <%=question.userid%>
+		// };
+		// $.ajax({
+		//   url: url,
+		//   data: data,
+		//   success: function(){
+		//   	$("upvote<%=question.id%>").addClass("btn-success");
+		//   }
+		// });
+	}); 
+	</script>
   </div>
 </div>
