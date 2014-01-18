@@ -19,10 +19,15 @@ if (!exists) {
         db.run('CREATE TABLE "answervotes" ("id" INTEGER PRIMARY KEY  NOT NULL  UNIQUE, "answerid" INTEGER, "userid" INTEGER, "positive" BOOLEAN, "created_at" DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP);');
         db.run('CREATE TABLE "users" ("id" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , "name" VARCHAR(70) NOT NULL UNIQUE, "password" VARCHAR(61) NOT NULL, "points" INTEGER NOT NULL  DEFAULT 0, "points_ever" INTEGER NOT NULL  DEFAULT 0, "created_at" DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP);');
         //fake data, username: lucasmullens password password
+        db.run('INSERT INTO "subs" ("name") VALUES ("doge")');
         db.run('INSERT INTO "users" VALUES ("1","lucasmullens","$2a$10$hLxg2Kn0WB0H6gKnLFGfYeohxfJl193NM9OSbRRu3XlYPWiE/En1q","0","0","2014-01-18 10:23:49");');
         db.run('INSERT INTO "users" VALUES ("2","Steve","$2a$10$hLxg2Kn0WB0H6gKnLFGfYeohxfJl193NM9OSbRRu3XlYPWiE/En1q","0","0","2014-01-18 10:23:49");');
-        db.run("INSERT INTO questions (userid, content) VALUES (1,'Whats up?'); ");
-        db.run("INSERT INTO questions (userid, content) VALUES (2,'Why is there no red bull?'); ");
+        db.run("INSERT INTO questions (userid, title, content, subid) VALUES (1,'hey','Whats up?','doge'); ");
+        db.run("INSERT INTO questions (userid, title, content, subid) VALUES (2,'so about mhacks','Why is there no red bull?','doge'); ");
+        db.run("INSERT INTO answers (userid, questionid, content) VALUES (1, 1, 'Nothing much'); ");
+        db.run("INSERT INTO answers (userid, questionid, content) VALUES (2, 1, 'Hey'); ");
+        db.run("INSERT INTO answers (userid, questionid, content) VALUES (1, 2, 'Cause mhacks is terrible'); ");
+        db.run("INSERT INTO answers (userid, questionid, content) VALUES (2, 2, 'Screw mhacks'); ");
     });
 }
 /////////END CREATE DATABASE
@@ -83,15 +88,11 @@ captifeye.get('/', function(req, res){
     getUser(req, function(user){
         var questions = []; 
         db.serialize(function(){
-            // user.id
             var extra = 'EXISTS(SELECT * FROM questionvotes as qv WHERE qv.userid = "'+user.id+'" AND q.id=qv.questionid) as voted ';
             var query = 'SELECT *, '+extra+' FROM questions as q INNER JOIN users as u on u.id = q.userid';
-            // query += ' LEFT JOIN (SELECT userid as qvuserid, questionid FROM questionvotes as qv WHERE qv.userid = "'+user.id+'") as qv on qv.questionid = q.id;'
-            
             db.all(query, function(err, rows){
                 if(err==null){//no error
                     for (var i = 0; i < rows.length; i++) {
-                        // console.log(rows[i]);
                         questions.push({
                             "id": rows[i].id,
                             "username": rows[i].username,
@@ -106,6 +107,79 @@ captifeye.get('/', function(req, res){
                         user:JSON.stringify(user),
                         questions:questions,
                         voterid: user.id
+                    });
+                }
+            });
+        });
+    });
+});
+captifeye.get('/s/:sub', function(req, res){
+    getUser(req, function(user){
+        var questions = []; 
+        db.serialize(function(){
+            var extra = 'EXISTS(SELECT * FROM questionvotes as qv WHERE qv.userid = "'+user.id+'" AND q.id=qv.questionid) as voted ';
+            var query = 'SELECT *, q.id as goodid, '+extra+' FROM questions as q INNER JOIN users as u on u.id = q.userid';
+            db.all(query, function(err, rows){
+                if(err==null){//no error
+                    for (var i = 0; i < rows.length; i++) {
+                        questions.push({
+                            "id": rows[i].goodid,
+                            "username": rows[i].username,
+                            "userid": rows[i].userid,
+                            "heading": rows[i].name,
+                            "text": rows[i].content,
+                            "voted": rows[i].voted
+                        });
+                    };
+                     res.render("base", {
+                        user:JSON.stringify(user),
+                        questions:questions,
+                        voterid: user.id
+                    });
+                }
+            });
+        });
+    });
+});
+captifeye.get('/s/:sub/:id', function(req, res){
+    getUser(req, function(user){
+        var answers = []; 
+        var id = url2id(req.params.id);
+        db.serialize(function(){
+            var extra = 'EXISTS(SELECT * FROM questionvotes as qv WHERE qv.userid = "'+user.id+'" AND q.id=qv.questionid) as voted ';
+            var query = 'SELECT *, q.id as goodid, '+extra+' FROM questions as q INNER JOIN users as u on u.id = q.userid WHERE q.id = "'+id+'" LIMIT 1';
+            db.all(query, function(err, rows){
+                if(err==null){//no error
+                        question = {
+                            "id": rows[0].goodid,
+                            "username": rows[0].username,
+                            "userid": rows[0].userid,
+                            "heading": rows[0].name,
+                            "text": rows[0].content,
+                            "voted": rows[0].voted
+                        };
+                     var extra = 'EXISTS(SELECT * FROM answervotes as av WHERE av.userid = "'+user.id+'" AND ans.id=av.answerid) as voted ';
+                    var query = 'SELECT *, ans.id as goodid, '+extra+' FROM answers as ans INNER JOIN users as u on u.id = ans.userid WHERE ans.questionid = "'+id+'"';
+                    console.log(query);
+                    db.all(query, function(err, rows){
+                         if(err==null){//no error
+                         for (var i = 0; i < rows.length; i++) {
+                            answers.push({
+                                "id": rows[i].goodid,
+                                "username": rows[i].username,
+                                "userid": rows[i].userid,
+                                "heading": rows[i].name,
+                                "text": rows[i].content,
+                                "voted": rows[i].voted
+                            });
+                        };
+                         res.render("question", {
+                            user:JSON.stringify(user),
+                            question:question,
+                            answers:answers,
+                            voterid: user.id
+                        });
+                     }
                     });
                 }
             });
@@ -129,7 +203,7 @@ captifeye.get('/user/:username', function(req, res){
                     var questions = [];
                     var extra = 'EXISTS(SELECT * FROM questionvotes as qv WHERE qv.userid = "'+user.id+'" AND q.id=qv.questionid) as voted ';
                     var query = 'SELECT *, '+extra+' FROM questions as q INNER JOIN users as u on u.id = q.userid WHERE u.name = "'+username+'"';
-                    console.log(query);
+                    // console.log(query);
                     db.all(query, function(err, rows){
                         if(err==null){//no error
                             for (var i = 0; i < rows.length; i++) {
@@ -250,6 +324,28 @@ captifeye.post('/api/question/unvote', function(req, res){
     var positive = req.body.positive;
     db.serialize(function(){
         db.run('DELETE FROM questionvotes WHERE questionid='+questionid+' AND userid='+userid+';', function(err){
+            if(err) res.send({status:400}); else res.send({status:200});
+        });
+    });
+});
+captifeye.post('/api/answer/vote', function(req, res){
+    var answerid = req.body.answerid;
+    var userid = req.body.userid;
+    var positive = req.body.positive;
+    db.serialize(function(){
+        var query = 'INSERT INTO answervotes (answerid, userid, positive) VALUES ('+answerid+', '+userid+', '+positive+')';
+        // console.log(query);
+        db.run(query, function(err){
+            if(err) res.send({status:400}); else res.send({status:200});
+        });
+    });
+});
+captifeye.post('/api/answer/unvote', function(req, res){
+    var answerid = req.body.answerid;
+    var userid = req.body.userid;
+    var positive = req.body.positive;
+    db.serialize(function(){
+        db.run('DELETE FROM answervotes WHERE answerid='+answerid+' AND userid='+userid+';', function(err){
             if(err) res.send({status:400}); else res.send({status:200});
         });
     });
