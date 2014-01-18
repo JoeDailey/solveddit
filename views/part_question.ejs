@@ -10,10 +10,11 @@
 	<script type="text/javascript">
 	$(function(){
 		$("#upvote<%=question.id%>").click(function(){
+			console.log(<%=question.id%>);
 			var url = "/api/question/vote";
 			var data = {
 				"questionid": <%=question.id%>,
-				"userid": <%=question.userid%>,
+				"userid": <%=voterid%>,
 				"positive": 1
 			};
 			$.ajax({
@@ -24,7 +25,6 @@
 			  dataType: "json"
 			});
 			$(this).addClass("btn-success");
-			console.log("adding");
 		});
 		// var url = "/api/isvoted";
 		// var data = {

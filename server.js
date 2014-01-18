@@ -19,7 +19,9 @@ if (!exists) {
         db.run('CREATE TABLE "users" ("id" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , "name" VARCHAR(70) NOT NULL UNIQUE, "password" VARCHAR(61) NOT NULL, "points" INTEGER NOT NULL  DEFAULT 0, "points_ever" INTEGER NOT NULL  DEFAULT 0, "created_at" DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP);');
         //fake data, username: lucasmullens password password
         db.run('INSERT INTO "users" VALUES ("1","lucasmullens","$2a$10$hLxg2Kn0WB0H6gKnLFGfYeohxfJl193NM9OSbRRu3XlYPWiE/En1q","0","0","2014-01-18 10:23:49");');
+        db.run('INSERT INTO "users" VALUES ("2","Steve","$2a$10$hLxg2Kn0WB0H6gKnLFGfYeohxfJl193NM9OSbRRu3XlYPWiE/En1q","0","0","2014-01-18 10:23:49");');
         db.run("INSERT INTO questions (userid, content) VALUES (1,'Whats up?'); ");
+        db.run("INSERT INTO questions (userid, content) VALUES (2,'Why is there no red bull?'); ");
     });
 }
 /////////END CREATE DATABASE
@@ -81,23 +83,27 @@ captifeye.get('/', function(req, res){
         var questions = []; 
         db.serialize(function(){
             // user.id
-            console.log(user);
-            db.all('SELECT *, qv.id as qv FROM questions as q INNER JOIN users as u on u.id = q.userid LEFT JOIN (SELECT * FROM questionvotes as qv WHERE qv.userid = "'+user.id+'") as qv on qv.questionid = q.id;'
-                , function(err, rows){
+            var extra = 'EXISTS(SELECT * FROM questionvotes as qv WHERE qv.userid = "'+user.id+'" AND q.id=qv.questionid) as voted ';
+            var query = 'SELECT *, '+extra+' FROM questions as q INNER JOIN users as u on u.id = q.userid';
+            // query += ' LEFT JOIN (SELECT userid as qvuserid, questionid FROM questionvotes as qv WHERE qv.userid = "'+user.id+'") as qv on qv.questionid = q.id;'
+            
+            db.all(query, function(err, rows){
                 if(err==null){//no error
                     for (var i = 0; i < rows.length; i++) {
-                        var voted = (rows[i].qv != null);
+                        // console.log(rows[i]);
                         questions.push({
                             "id": rows[i].id,
                             "username": rows[i].username,
+                            "userid": rows[i].userid,
                             "heading": rows[i].name,
                             "text": rows[i].content,
-                            "voted": voted
+                            "voted": rows[i].voted
                         });
                     };
                      res.render("base", {
                         user:JSON.stringify(user),
-                        questions:questions
+                        questions:questions,
+                        voterid: user.id
                     });
                 }
             });
@@ -193,13 +199,14 @@ captifeye.get('/logout', function(req, res){
 ///////////////////////////////////////////////////////////////////////////////////////////
 //API Start///////////////////////////////////////////////////////////////////////////////
 captifeye.post('/api/question/vote', function(req, res){
-    console.log("added");
     var questionid = req.body.questionid;
     var userid = req.body.userid;
     var positive = req.body.positive;
     db.serialize(function(){
-        db.run('INSERT INTO questionvotes (questionid, userid, positive) VALUES ('+questionid+', '+userid+', '+positive+')');
-            if(err) res.statusCode(400); else res.statusCode(200);
+        var query = 'INSERT INTO questionvotes (questionid, userid, positive) VALUES ('+questionid+', '+userid+', '+positive+')';
+        db.run(query, function(err){
+            if(err) res.send({status:400}); else res.send({status:200});
+        });
     });
 });
 captifeye.post('/api/question/unvote', function(req, res){
@@ -208,7 +215,7 @@ captifeye.post('/api/question/unvote', function(req, res){
     var positive = req.body.positive;
     db.serialize(function(){
         db.run('DELETE FROM questionvotes WHERE questionid='+questionid+' AND userid='+userid+';', function(err){
-            if(err) res.statusCode(400); else res.statusCode(200);
+            if(err) res.send({status:400}); else res.send({status:200});
         });
     });
 });
