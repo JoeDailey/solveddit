@@ -1,0 +1,20 @@
+<%include part_head%>
+	<div class="form_container">
+		<div class="form_half">
+			<form action="/register" method="POST">
+				<input type="text" name="username" placeholder="username">
+				<input type="email" name="email" placeholder="email addres">
+				<input type="password" name="pass" placeholder="password">
+				<input type="password" name="passcomf" placeholder="confirm password">
+				<input type="submit">
+			</form>
+		</div>
+		<div class="form_half">
+			<form action="/login" method="POST">
+				<input type="text" name="username" placeholder="username">
+				<input type="password" name="pass" placeholder="password">
+				<input type="submit">
+			</form>
+		</div>
+	</div>
+<%include part_foot%>
