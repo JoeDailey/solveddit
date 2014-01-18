@@ -90,7 +90,6 @@ captifeye.get('/', function(req, res){
                     };
                      res.render("base", {
                         user:JSON.stringify(user),
-                        content:"Lucas, hi",
                         questions:questions
                     });
                 }
@@ -104,10 +103,28 @@ captifeye.get('/auth', function(req, res){
         user:"null"
     });
 });
+//---------------------------------------------/////-username
+captifeye.get('/user/:username', function(req, res){
+    var username = req.params.username;
+    getUser(req, function(user){
+        db.serialize(function(){
+            db.get('SELECT * FROM users WHERE name="'+username+'";', function(err, viewUser){
+                if(err || viewUser==undefined) res.render('error', {user:user, errorNumber:404, errorMessage:"This user does not exist."});
+                else
+                    res.render('user', {
+                        user:user,
+                        viewUserName:viewUser.name,
+                        viewUserPoints:viewUser.points,
+                        viewUserPointsEver:viewUser.points_ever,
+                    });
+            });
+        });
+    });
+});
 //Routing End///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
 //Login/Logout Start//////////////////////////////////////////////////////////////////////
-//---------------------------------------------/////-register
+//---------------------------------------------/////-login
 captifeye.post("/login", function(req, res){
     var name = req.body.username;
     var password = req.body.password;
@@ -115,11 +132,8 @@ captifeye.post("/login", function(req, res){
         db.get('SELECT * FROM users WHERE name="'+name+'";', function(err, row){
             if(err==null){
                 if(row!=undefined){//exists
-                    console.log(row.password+", "+password);
                     comparePassword(password, row.password, function(nul, match){
-                        console.log("match:"+match);
                         if(match == true){
-                            console.log("setting cookie")
                             res.cookie('name', ""+row.name, { maxAge: 3600000, signed: true });
                             res.redirect("/");
                         }else{
@@ -130,7 +144,6 @@ captifeye.post("/login", function(req, res){
                     res.send({status:404});
                 }
             }else{//err
-                console.log("log: " + err);
                 res.send({status:404});
             }
         });
@@ -140,7 +153,6 @@ captifeye.post("/login", function(req, res){
 captifeye.post("/register", function(req, res){
     var name = req.body.username;
     var password = req.body.password;
-    console.log(name +", "+password)
     db.serialize(function(){
         db.get('SELECT * FROM users WHERE name="'+name+'";', function(checkErr, checkRow){
             if(checkErr==null){
@@ -154,11 +166,13 @@ captifeye.post("/register", function(req, res){
                         });
                     });
                 }else{
-                    res.send({status:304});
+                    res.statusCode(304);
                 }
             }else{
-                console.log(checkErr);
-                res.send(checkErr);
+                res.render('error', {
+                    errorMessage:"500",
+                    errorMessage:"There was an issue connecting to the database."
+                });
             }
         });  
     });
@@ -193,7 +207,6 @@ var getUser = function(req, callback){
         callback("null");
     } else {
         db.serialize(function(){
-            console.log("serialize");
             db.get("SELECT * FROM users WHERE name='"+req.signedCookies.name+"';", function(err, user){
                 if(err) callback("null");
                 else{
