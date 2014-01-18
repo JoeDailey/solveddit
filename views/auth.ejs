@@ -2,18 +2,36 @@
 	<div class="form_container">
 		<div class="form_half">
 			<form action="/register" method="POST">
-				<input type="text" name="username" placeholder="username">
-				<input type="email" name="email" placeholder="email addres">
-				<input type="password" name="pass" placeholder="password">
-				<input type="password" name="passcomf" placeholder="confirm password">
-				<input type="submit">
+				<div class="input-group">
+				  <span class="input-group-addon">:P</span>
+				  <input type="text" class="form-control" name="username" placeholder="Username">
+				</div>
+				<div class="input-group">
+				  <span class="input-group-addon">@</span>
+				  <input type="email" class="form-control" name="email" placeholder="Email Address">
+				</div>
+				<div class="input-group">
+				  <span class="input-group-addon">*</span>
+				  <input type="password" class="form-control" name="password" placeholder="Password">
+				</div>
+				<div class="input-group">
+				  <span class="input-group-addon">*</span>
+				  <input type="password" class="form-control" name="passwordComf" placeholder="Confirm Password">
+				</div>
+				<button type="submit" class="btn btn-default">Submit</button>
 			</form>
 		</div>
 		<div class="form_half">
 			<form action="/login" method="POST">
-				<input type="text" name="username" placeholder="username">
-				<input type="password" name="pass" placeholder="password">
-				<input type="submit">
+				<div class="input-group">
+				  <span class="input-group-addon">:P</span>
+				  <input type="text" class="form-control" name="username" placeholder="Username">
+				</div>
+				<div class="input-group">
+				  <span class="input-group-addon">*</span>
+				  <input type="password" class="form-control" name="password" placeholder="Password">
+				</div>
+				<button type="submit" class="btn btn-default">Submit</button>
 			</form>
 		</div>
 	</div>

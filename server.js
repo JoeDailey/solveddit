@@ -11,8 +11,7 @@ var sqlite3 = require("sqlite3").verbose();
 var db = new sqlite3.Database(file);
 if (!exists) {
     db.serialize(function() {
-        db.run('CREATE TABLE "unregistered_users" ("id" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , "name" VARCHAR(70) NOT NULL , "email" VARCHAR(90) NOT NULL  UNIQUE , "password" VARCHAR(50) NOT NULL , "created_at" DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP);');
-        db.run('CREATE TABLE "users" ("id" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , "name" VARCHAR(70) NOT NULL , "email" VARCHAR(90) NOT NULL  UNIQUE , "password" VARCHAR(50) NOT NULL , "created_at" DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP);');
+        db.run('CREATE TABLE "users" ("id" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , "name" VARCHAR(70) NOT NULL , "email" VARCHAR(90) NOT NULL  UNIQUE , "password" VARCHAR(61) NOT NULL , "activated" BOOL NOT NULL  DEFAULT false, "created_at" DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP);');
     });
 }
 /////////END CREATE DATABASE
@@ -118,22 +117,21 @@ captifeye.post("/register", function(req, res){
     var password = req.body.password;
     db.serialize(function(){
         db.get('SELECT * FROM users WHERE email="'+email+'";', function(checkErr, checkRow){
-            console.log("error: "+checkErr+", row:"+checkRow)
             if(checkErr==null){
                 if(checkRow==undefined){
                     cryptPassword(password, function(cryptErr, hash){
                         console.log(cryptErr)
-                        db.run('INSERT INTO unregistered_users (name,email,password) VALUES ("'+name+'","'+email+'","'+hash+'");', function(err){
+                        db.run('INSERT INTO users (name,email,password) VALUES ("'+name+'","'+email+'","'+hash+'");', function(err){
                             console.log("err:"+err+" post-run");
                             if(err==null){
-                                db.get('SELECT * FROM unregistered_users WHERE email="'+email+'";', function(error, row){
+                                db.get('SELECT * FROM users WHERE email="'+email+'";', function(error, row){
                                     console.log("error:"+error+" post-run");
                                     if(error==null){
                                         mailer.sendMail({
                                             from: "Captifeye Account Registration <noreply@captifeye.com>", // sender address
                                             to: name + "<" + email + ">", // comma separated list of receivers
                                             subject: "Account Registration", // Subject line
-                                            text: "follow this link to register your account: localhost:7000/register/"+id2url(row.id) // plaintext body
+                                            text: "follow this link to register your account: localhost:9000/register/"+id2url(row.id) // plaintext body
                                         }, function(mail_error, response){
                                             if(mail_error){
                                                 console.log(mail_error);
@@ -169,9 +167,7 @@ captifeye.get("/register/:token", function(req, res){
     var query = 'SELECT * FROM unregistered_users WHERE id = "'+url2id(req.params.token)+'"';
     db.serialize(function(){
         db.get(query, function(err, row){
-            console.log(err +", "+ row);
             if(err==null && row!=undefined)
-                console.log("row:" +row);
                 db.run('INSERT INTO users (name,email,password) VALUES ("'+row.name+'","'+row.email+'","'+row.password+'");', function(err){
                     if(err)
                         res.render("error", {errorNumber:"Something went wrong!",
