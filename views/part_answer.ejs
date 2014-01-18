@@ -1,0 +1,32 @@
+<div class="panel panel-default">
+  <div class="panel-body">
+    <button type="button" class="left-half btn btn-default <% if (answer.voted) {%>  btn-success  <%}%>" id="upvoteanswer<%=answer.id%>">
+	  <span class="glyphicon glyphicon-arrow-up"></span>
+	</button>
+		<div class="right-half">&nbsp;<%=answer.text%></div>
+	<script type="text/javascript">
+	$(function(){
+		$("#upvoteanswer<%=answer.id%>").click(function(){
+			if ($(this).hasClass("btn-success")){
+			var url = "/api/answer/unvote";
+		} else {
+			var url = "/api/answer/vote";
+		}
+			var data = {
+				"answerid": <%=answer.id%>,
+				"userid": <%=voterid%>,
+				"positive": 1
+			};
+			$.ajax({
+			  type: "POST",
+			  context: document.body,
+			  url: url,
+			  data: data,
+			  dataType: "json"
+			});
+			$(this).toggleClass("btn-success");
+		});
+	}); 
+	</script>
+  </div>
+</div>
