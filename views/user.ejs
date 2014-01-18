@@ -1,13 +1,42 @@
 <%include part_head%>
 <script>
 	$(document).ready(function(){
-
+		if(user!=null){
+			if(user.name == viewUserName){
+				$('.tab-content').append($('<div class="tab-pane fade" id="pane_ask">Ask A Question</div>'))
+				$('.nav-tabs').append($('<li id="tab_ask "><a href="#pane_ask" data-toggle="tab">Ask a Question</a></li>'));
+				$('#tab_ask a').click(function (e) {
+					e.preventDefault();
+					$('pane_ask').tab('show');
+				});
+			}
+		}
+		$('#tab_questions a').click(function (e) {
+			e.preventDefault();
+			$('pane_questions').tab('show');
+		});
+		$('#tab_answers a').click(function (e) {
+			e.preventDefault();
+			$('#pane_answers').tab('show');
+		});
 	});
 </script>
 <div class="row">
-	<div class="form_half col-md-6 ">
-		<h2><%= viewUserName %> <%= viewUserPoints %> / <strong><%= viewUserPointsEver %></strong></h2>
+	<div class="col-md-12 ">
+		<h2><%= viewUserName %> <span style="float:right"> <%= viewUserPoints %> &bull; <strong><%= viewUserPointsEver %></strong></span></h2>
 	</div>
+	<div class="well col-md-12 ">
+		<ul class="nav nav-tabs">
+			<li id="tab_questions" class="active"><a href="#pane_questions" data-toggle="tab">Questions</a></li>
+			<li id="tab_answers "><a href="#pane_answers" data-toggle="tab">Answers</a></li>
+		</ul>
+		<!-- Tab panes -->
+		<div class="tab-content">
+			<div class="tab-pane fade active in" id="pane_questions">QUESTONs</div>
+			<div class="tab-pane fade" id="pane_answers">ANSERS</div>
+		</div>
+	</div>
+
 </div>
 
 <%include part_foot%>
