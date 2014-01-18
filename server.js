@@ -18,6 +18,9 @@ if (!exists) {
         db.run('CREATE TABLE "answervotes" ("id" INTEGER PRIMARY KEY  NOT NULL  UNIQUE, "answerid" INTEGER, "userid" INTEGER, "positive" BOOLEAN, "created_at" DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP);');
         db.run('CREATE TABLE "users" ("id" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , "name" VARCHAR(70) NOT NULL , "password" VARCHAR(61) NOT NULL, "created_at" DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP);');
 
+        //fake data
+        db.run("INSERT INTO users (id, name, password) VALUES (1, 'Lucas', 'myencryptedpassword'); ");
+        db.run("INSERT INTO questions (userid, content) VALUES (1,'Whats up?'); ");
     });
 }
 /////////END CREATE DATABASE
@@ -61,7 +64,7 @@ var cryptPassword = function(password, callback) {
       }
   });
 };
-//decript password -> callback(bool matches)
+//decrypt password -> callback(bool matches)
 var comparePassword = function(password, userPassword, callback) {
    bcrypt.compare(password, userPassword, function(err, isPasswordMatch) {
       if (err) return callback(err);
@@ -75,16 +78,24 @@ captifeye.listen(9000);
 //RoutingStart///////////////////////////////////////////////////////////////////////////
 //---------------------------------------------/////-landing page
 captifeye.get('/', function(req, res){
-    console.log("Sending base");
-    var content = '<div class="list-group">
-  <a href="#" class="list-group-item active">
-    <h4 class="list-group-item-heading">List group item heading</h4>
-    <p class="list-group-item-text">...</p>
-  </a>
-</div>';
-    res.render("base", {
-        content: content
+    // console.log("Sending base");
+    var questions = []; 
+    db.serialize(function(){
+        db.all('SELECT * FROM questions as q INNER JOIN users as u on u.id = q.userid', function(err, rows){
+            if(err==null){//no error
+                for (var i = 0; i < rows.length; i++) {
+                    questions.push({
+                        "heading": rows[i].name,
+                        "text": rows[i].content
+                    });
+                };
+                res.render("base", {
+                    questions: questions
+                });
+            }
+        });
     });
+    
 });
 //---------------------------------------------/////-signup + logins
 captifeye.get('/auth', function(req, res){

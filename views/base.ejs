@@ -1,3 +1,5 @@
 <%include part_head%>
-	<%=content%>
+	<% questions.forEach(function(question){ %>
+    <% include part_question %>
+  <% }) %>
 <%include part_foot%>
