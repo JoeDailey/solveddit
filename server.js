@@ -17,8 +17,8 @@ if (!exists) {
         db.run('CREATE TABLE "questionvotes" ("id" INTEGER PRIMARY KEY  NOT NULL  UNIQUE, "questionid" INTEGER, "userid" INTEGER, "positive" BOOLEAN, "created_at" DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP);');
         db.run('CREATE TABLE "answervotes" ("id" INTEGER PRIMARY KEY  NOT NULL  UNIQUE, "answerid" INTEGER, "userid" INTEGER, "positive" BOOLEAN, "created_at" DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP);');
         db.run('CREATE TABLE "users" ("id" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , "name" VARCHAR(70) NOT NULL UNIQUE, "password" VARCHAR(61) NOT NULL, "points" INTEGER NOT NULL  DEFAULT 0, "points_ever" INTEGER NOT NULL  DEFAULT 0, "created_at" DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP);');
-        //fake data
-        db.run("INSERT INTO users (id, name, password) VALUES (1, 'Lucas', 'myencryptedpassword'); ");
+        //fake data, username: lucasmullens password password
+        db.run('INSERT INTO "users" VALUES ("1","lucasmullens","$2a$10$hLxg2Kn0WB0H6gKnLFGfYeohxfJl193NM9OSbRRu3XlYPWiE/En1q","0","0","2014-01-18 10:23:49");');
         db.run("INSERT INTO questions (userid, content) VALUES (1,'Whats up?'); ");
     });
 }
@@ -80,14 +80,19 @@ captifeye.get('/', function(req, res){
     getUser(req, function(user){
         var questions = []; 
         db.serialize(function(){
-            db.all('SELECT * FROM questions as q INNER JOIN users as u on u.id = q.userid', function(err, rows){
+            // user.id
+            console.log(user);
+            db.all('SELECT *, qv.id as qv FROM questions as q INNER JOIN users as u on u.id = q.userid LEFT JOIN (SELECT * FROM questionvotes as qv WHERE qv.userid = "'+user.id+'") as qv on qv.questionid = q.id;'
+                , function(err, rows){
                 if(err==null){//no error
                     for (var i = 0; i < rows.length; i++) {
+                        var voted = (rows[i].qv != null);
                         questions.push({
                             "id": rows[i].id,
                             "username": rows[i].username,
                             "heading": rows[i].name,
-                            "text": rows[i].content
+                            "text": rows[i].content,
+                            "voted": voted
                         });
                     };
                      res.render("base", {
@@ -216,6 +221,7 @@ var getUser = function(req, callback){
                      //    if(err) callback(null);
                         // else{
                             var data = {
+                                "id":user.id,
                                 "username":user.name,
                                 "notificationCount":0,//notes.length,
                                 "points":user.points

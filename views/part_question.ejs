@@ -10,7 +10,7 @@
 	<script type="text/javascript">
 	$(function(){
 		$("#upvote<%=question.id%>").click(function(){
-			var url = "/api/vote";
+			var url = "/api/question/vote";
 			var data = {
 				"questionid": <%=question.id%>,
 				"userid": <%=question.userid%>,
