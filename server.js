@@ -16,8 +16,7 @@ if (!exists) {
         //userid is who voted
         db.run('CREATE TABLE "questionvotes" ("id" INTEGER PRIMARY KEY  NOT NULL  UNIQUE, "questionid" INTEGER, "userid" INTEGER, "positive" BOOLEAN, "created_at" DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP);');
         db.run('CREATE TABLE "answervotes" ("id" INTEGER PRIMARY KEY  NOT NULL  UNIQUE, "answerid" INTEGER, "userid" INTEGER, "positive" BOOLEAN, "created_at" DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP);');
-        db.run('CREATE TABLE "unregistered_users" ("id" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , "name" VARCHAR(70) NOT NULL , "email" VARCHAR(90) NOT NULL  UNIQUE , "password" VARCHAR(50) NOT NULL , "created_at" DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP);');
-        db.run('CREATE TABLE "users" ("id" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , "name" VARCHAR(70) NOT NULL , "email" VARCHAR(90) NOT NULL  UNIQUE , "password" VARCHAR(61) NOT NULL , "activated" BOOL NOT NULL  DEFAULT false, "created_at" DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP);');
+        db.run('CREATE TABLE "users" ("id" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , "name" VARCHAR(70) NOT NULL , "password" VARCHAR(61) NOT NULL, "created_at" DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP);');
 
     });
 }
@@ -36,8 +35,8 @@ var nodemailer = require('nodemailer');
 var mailer = nodemailer.createTransport("SMTP",{
    service: "Gmail",
    auth: {
-       user: "captifeye@gmail.com",
-       pass: "Captifizzle"
+       user: "solveddit.noreply@gmail.com",
+       pass: "solveddit!"
    }
 });
 //path/////////////////////////////////////////////////////////////////////////////////////
@@ -90,10 +89,10 @@ captifeye.get('/auth', function(req, res){
 //Login/Logout Start//////////////////////////////////////////////////////////////////////
 //---------------------------------------------/////-register
 captifeye.post("/login", function(req, res){
-    var email = req.body.email;
+    var name = req.body.username;
     var password = req.body.password;
     db.serialize(function(){
-        db.get('SELECT * FROM users WHERE email="'+email+'";', function(err, row){
+        db.get('SELECT * FROM users WHERE name="'+name+'";', function(err, row){
             if(err==null){
                 if(row!=undefined){//exists
                     console.log(row.password+", "+password);
@@ -101,7 +100,7 @@ captifeye.post("/login", function(req, res){
                         console.log("match:"+match);
                         if(match == true){
                             console.log("setting cookie")
-                            res.cookie('email', ""+row.email, { maxAge: 3600000, signed: true });
+                            res.cookie('name', ""+row.name, { maxAge: 3600000, signed: true });
                             res.redirect("/");
                         }else{
                             res.send("304");
@@ -119,37 +118,18 @@ captifeye.post("/login", function(req, res){
 });
 //---------------------------------------------/////-register
 captifeye.post("/register", function(req, res){
-    var name = req.body.name;
-    var email = req.body.email;
+    var name = req.body.username;
     var password = req.body.password;
+    console.log(name +", "+password)
     db.serialize(function(){
-        db.get('SELECT * FROM users WHERE email="'+email+'";', function(checkErr, checkRow){
+        db.get('SELECT * FROM users WHERE name="'+name+'";', function(checkErr, checkRow){
             if(checkErr==null){
                 if(checkRow==undefined){
                     cryptPassword(password, function(cryptErr, hash){
-                        console.log(cryptErr)
-                        db.run('INSERT INTO users (name,email,password) VALUES ("'+name+'","'+email+'","'+hash+'");', function(err){
-                            console.log("err:"+err+" post-run");
+                        db.run('INSERT INTO users (name, password) VALUES ("'+name+'","'+hash+'");', function(err){
                             if(err==null){
-                                db.get('SELECT * FROM users WHERE email="'+email+'";', function(error, row){
-                                    console.log("error:"+error+" post-run");
-                                    if(error==null){
-                                        mailer.sendMail({
-                                            from: "Captifeye Account Registration <noreply@captifeye.com>", // sender address
-                                            to: name + "<" + email + ">", // comma separated list of receivers
-                                            subject: "Account Registration", // Subject line
-                                            text: "follow this link to register your account: localhost:9000/register/"+id2url(row.id) // plaintext body
-                                        }, function(mail_error, response){
-                                            if(mail_error){
-                                                console.log(mail_error);
-                                                res.send({status:500});
-                                            }else{
-                                                console.log("Message sent: " + response.message);
-                                                res.redirect("/activate");
-                                            }
-                                        });
-                                    }
-                                });
+                                res.cookie('name', ""+name, { maxAge: 3600000, signed: true });
+                                res.redirect("/");
                             }
                         });
                     });
@@ -157,37 +137,10 @@ captifeye.post("/register", function(req, res){
                     res.send({status:304});
                 }
             }else{
-                res.send({status:500});
+                console.log(checkErr);
+                res.send(checkErr);
             }
         });  
-    });
-});
-//---------------------------------------------/////-activate
-captifeye.get("/activate", function(req, res){
-    if (req.signedCookies.email == undefined) {
-        res.render("activate", {});
-    }else
-        res.redirect("/");
-});
-//---------------------------------------------/////-activate
-captifeye.get("/register/:token", function(req, res){
-    var query = 'SELECT * FROM unregistered_users WHERE id = "'+url2id(req.params.token)+'"';
-    db.serialize(function(){
-        db.get(query, function(err, row){
-            if(err==null && row!=undefined)
-                db.run('INSERT INTO users (name,email,password) VALUES ("'+row.name+'","'+row.email+'","'+row.password+'");', function(err){
-                    if(err)
-                        res.render("error", {errorNumber:"Something went wrong!",
-                                             comment:"Your account was not added, we are working on it."});
-                    else{
-                        console.log("Logging Cookie");
-
-                        res.cookie('email', row.email, { maxAge: 3600000, signed: true });
-                        res.redirect("/");
-                        db.run('DELETE FROM unregistered_users WHERE id='+row.id+';');
-                    }
-                })
-        });
     });
 });
 //---------------------------------------------/////-logout
