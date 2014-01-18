@@ -1,6 +1,16 @@
 <html>
 	<head>
-	<script type="text/javascript" src="bower_components/jquery/jquery.min.js"></script>
+	<script type="text/javascript" src="/static/bower_components/jquery/jquery.min.js"></script>
+  <script>
+    $('document').ready( function(){
+    var user = <%- user%>;
+      if(user){
+        $("#navbar-main").append($('<li class="dropdown"><a href="/user/'+user.username+'" class="dropdown-toggle" data-toggle="dropdown">'+user.username+'<b class="caret"></b></a><ul class="dropdown-menu"><li><a href="/user/'+user.username+'">My Profile</a></li><li><a href="/logout">Logout</a></li></ul></li>'));
+      }else{
+        $("#navbar-main").append($('<li><a href="/auth">Sign In</a></li>'));
+      }
+    });
+  </script>
     <title>Solveddit</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Bootstrap -->
@@ -24,9 +34,8 @@
           <a class="navbar-brand" href="#">Solveddit</a>
         </div>
         <div class="navbar-collapse collapse">
-          <ul class="nav navbar-nav">
+          <ul id="navbar-main" class="nav navbar-nav navbar-right">
             <li class="active"><a href="/">Home</a></li>
-            <li><a href="">Profile</a></li>
             <li><a href="/new">Ask Question</a></li>
           </ul>
          

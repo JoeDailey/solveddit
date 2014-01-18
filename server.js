@@ -16,8 +16,7 @@ if (!exists) {
         //userid is who voted
         db.run('CREATE TABLE "questionvotes" ("id" INTEGER PRIMARY KEY  NOT NULL  UNIQUE, "questionid" INTEGER, "userid" INTEGER, "positive" BOOLEAN, "created_at" DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP);');
         db.run('CREATE TABLE "answervotes" ("id" INTEGER PRIMARY KEY  NOT NULL  UNIQUE, "answerid" INTEGER, "userid" INTEGER, "positive" BOOLEAN, "created_at" DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP);');
-        db.run('CREATE TABLE "users" ("id" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , "name" VARCHAR(70) NOT NULL , "password" VARCHAR(61) NOT NULL, "created_at" DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP);');
-
+        db.run('CREATE TABLE "users" ("id" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , "name" VARCHAR(70) NOT NULL UNIQUE, "password" VARCHAR(61) NOT NULL, "points" INTEGER NOT NULL  DEFAULT 0, "points_ever" INTEGER NOT NULL  DEFAULT 0 "created_at" DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP);');
     });
 }
 /////////END CREATE DATABASE
@@ -75,9 +74,11 @@ captifeye.listen(9000);
 //RoutingStart///////////////////////////////////////////////////////////////////////////
 //---------------------------------------------/////-landing page
 captifeye.get('/', function(req, res){
-    console.log("Sending base");
-    res.render("base", {
-        content:"Lucas, hi"
+    getUser(req, function(user){
+        res.render("base", {
+            user:JSON.stringify(user),
+            content:"Lucas, hi"
+        });
     });
 });
 //---------------------------------------------/////-signup + logins
@@ -157,6 +158,7 @@ captifeye.get('/logout', function(req, res){
 //404 Error start/////////////////////////////////////////////////////////////////////////
 captifeye.get("*", function(req, res){
     res.render('error', {
+        "user":JSON.stringify({username:"Lucas"}),
         "errorNumber":404,
         "errorMessage":"sorry, lulz"
     });
@@ -165,51 +167,26 @@ captifeye.get("*", function(req, res){
 ///////////////////////////////////////////////////////////////////////////////////////////
 //Misc Start//////////////////////////////////////////////////////////////////////////////
 //base cookie check and navigation building
-var getUser = function(req, res, unloggedRedirect, callback){
-    console.log("getUser");
-    if (req.signedCookies.email == undefined) {   
-        res.redirect(unloggedRedirect);
+var getUser = function(req, callback){
+    if (req.signedCookies.name == undefined) {
+        callback(null);
     } else {
         db.serialize(function(){
             console.log("serialize");
-            db.get("SELECT * FROM users WHERE email='"+req.signedCookies.email+"';", function(err, user){
-                console.log("get users");
-                if(err) res.render("error", { errorNumber:"ERROR!", comment:JSON.stringify(err)});
+            db.get("SELECT * FROM users WHERE name='"+req.signedCookies.username+"';", function(err, user){
+                if(err) callback(null);
                 else{
-                     db.all('SELECT * FROM locations WHERE user_id="'+user.id+'";', function(err, locations){
-                        console.log("all locations");
-                        if(err){ res.render("error", { errorNumber:"ERROR!", comment:JSON.stringify(err)}); console.log(err)}
-                        else{
-                            var posts = [{name:"Bill Bong",
-                                          time:"45 mins",
-                                          url:"url",
-                                          image:"static/admin/assets/img/avatar2.jpg",
-                                          locaion:"The Nitty Gritty",
-                                          deal:"Drunkest Birthday"}];
-                            var notificationAlertCount = "";
-                            if(posts.length != 0)
-                                notificationAlertCount = '<span class="badge">'+posts.length+'</span>';
-                            var notificationsHTML = "";
-                            for(var i = 0; i < posts.length; i++){
-                                notificationsHTML+='<li><a href="'+posts[i].url+'"><span class="photo"><img src="'+posts[i].image+'" alt=""/></span><span class="subject"><span class="from">'+posts[i].name+'</span><span class="time">'+posts[i].time+'</span></span><span class="message">@'+posts[i].locaion+'For '+posts[i].deal+'</span></a></li>'
-                            }
-                            console.log("Loc: " + JSON.stringify(locations));
-                            var locationsHTML = "";
-                            for(var j = 0; j < locations.length; j++){
-                                locationsHTML+='<li><a href="/admin/'+id2url(locations[j].id)+'">'+locations[j].name+'</a></li>'
-                            }
+                     // db.all('SELECT * FROM questions WHERE notification=true;', function(err, notes){
+                     //    if(err) callback(null);
+                        // else{
                             var data = {
-                                "user":user,
-                                "name":user.name, 
-                                "notificationCount":posts.length,
-                                "notificationAlertCount":notificationAlertCount,
-                                "notificationsHTML":notificationsHTML,
-                                "locations":locationsHTML
+                                "username":user.name,
+                                "notificationCount":notes.length,
+                                "points":0//user.points
                             };
-                            console.log("callingback");
                             callback(data);
-                        }
-                    });
+                        // }
+                    // });
                 }
             });
         });
