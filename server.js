@@ -45,7 +45,6 @@ captifeye.set('view options', {
 });
 //setup password encryption
 var bcrypt = require('bcrypt');
-console.log(bcrypt);
 //encrypt password -> callback(err, hash)
 var cryptPassword = function(password, callback) {
    bcrypt.genSalt(10, function(err, salt) {
@@ -69,12 +68,13 @@ captifeye.listen(9000);
 //Set Up End///////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////
 //RoutingStart///////////////////////////////////////////////////////////////////////////
-//---------------------------------------------/////-landing page |home<--cookie-->admin|
+//---------------------------------------------/////-landing page
 captifeye.get('/', function(req, res){
     console.log("Sending base");
-    res.render("base", {});
+    res.render("base", {
+        content:"Lucas, hi"
+    });
 });
-//---------------------------------------------/////-forced-landing page
 //---------------------------------------------/////-signup + logins
 captifeye.get('/auth', function(req, res){
     res.render("auth", {});
@@ -202,7 +202,7 @@ captifeye.get('/logout', function(req, res){
 captifeye.get("*", function(req, res){
     res.render('error', {
         "errorNumber":404,
-        "comment":"sorry, lulz"
+        "errorMessage":"sorry, lulz"
     });
 });
 //404 Error end/////////////////////////////////////////////////////////////////////////////
