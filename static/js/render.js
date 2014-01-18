@@ -5,4 +5,10 @@ $(document).ready(function(){
 	}else{
 		$("#navbar-main").append($('<li><a href="/auth">Sign In</a></li>'));
 	}
+
+		$(".text-toggler").click(function(){
+				$($(this).children('.glyphicon')).toggleClass('glyphicon-chevron-right');
+				$($(this).children('.glyphicon')).toggleClass('glyphicon-chevron-down');
+				$($($(this).parent()).children('.extra-text')).toggle();
+		});
 });
