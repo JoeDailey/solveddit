@@ -123,13 +123,35 @@ captifeye.get('/user/:username', function(req, res){
         db.serialize(function(){
             db.get('SELECT * FROM users WHERE name="'+username+'";', function(err, viewUser){
                 if(err || viewUser==undefined) res.render('error', {user:user, errorNumber:404, errorMessage:"This user does not exist."});
-                else
-                    res.render('user', {
-                        user:user,
-                        viewUserName:viewUser.name,
-                        viewUserPoints:viewUser.points,
-                        viewUserPointsEver:viewUser.points_ever,
+                else{
+                    var questions = [];
+                    var extra = 'EXISTS(SELECT * FROM questionvotes as qv WHERE qv.userid = "'+user.id+'" AND q.id=qv.questionid) as voted ';
+                    var query = 'SELECT *, '+extra+' FROM questions as q INNER JOIN users as u on u.id = q.userid WHERE u.name = "'+username+'"';
+                    console.log(query);
+                    db.all(query, function(err, rows){
+                        if(err==null){//no error
+                            for (var i = 0; i < rows.length; i++) {
+                                // console.log(rows[i]);
+                                questions.push({
+                                    "id": rows[i].id,
+                                    "username": rows[i].username,
+                                    "userid": rows[i].userid,
+                                    "heading": rows[i].name,
+                                    "text": rows[i].content,
+                                    "voted": rows[i].voted
+                                });
+                            };
+                             res.render('user', {
+                                 user:JSON.stringify(user),
+                                 viewUserName:viewUser.name,
+                                 viewUserPoints:viewUser.points,
+                                 viewUserPointsEver:viewUser.points_ever,
+                                 questions:questions,
+                                 voterid: user.id
+                             });
+                        }
                     });
+                }
             });
         });
     });
