@@ -177,17 +177,18 @@ solveddit.get('/s/:sub/:id', function(req, res){
             var query = 'SELECT *, q.id as goodid, '+extra+' FROM questions as q INNER JOIN users as u on u.id = q.userid WHERE q.id = "'+id+'" LIMIT 1';
             db.get(query, function(err, row){
                 if(err==null){//no error
-                        question = {
-                            "id": row.goodid,
-                            "username": row.username,
-                            "userid": row.userid,
-                            "heading": row.name,
-                            "title": row.title,
-                            "text": row.content,
-                            "sub": req.params.sub,
-                            "hide": false,
-                            "voted": row.voted
-                        };
+                    question = {
+                        "id": row.goodid,
+                        "username": row.username,
+                        "userid": row.userid,
+                        "heading": row.name,
+                        "title": row.title,
+                        "text": row.content,
+                        "sub": req.params.sub,
+                        "hide": false,
+                        "voted": row.voted
+                    };
+//get all answers of user joined with whether or not logged in user voted for it and joined with number of voted it's recieved and subid
                     var extra = 'EXISTS(SELECT * FROM answervotes as av WHERE av.userid = "'+user.id+'" AND ans.id=av.answerid) as voted ';
                     var query = 'SELECT *, ans.id as goodid, '+extra+' FROM answers as ans INNER JOIN users as u on u.id = ans.userid WHERE ans.questionid = "'+id+'"';
                     db.all(query, function(err, rows){
@@ -195,7 +196,7 @@ solveddit.get('/s/:sub/:id', function(req, res){
                             for (var i = 0; i < rows.length; i++) {
                                 answers.push({
                                     "id": rows[i].goodid,
-                                    "username": rows[i].username,
+                                    "username": rows[i].name,
                                     "userid": rows[i].userid,
                                     "heading": rows[i].name,
                                     "title": rows[i].title,
@@ -223,6 +224,16 @@ solveddit.get('/auth', function(req, res){
         user:"null"
     });
 });
+solveddit.get('/buy', function(req, res){
+    getUser(req, function(user){
+        if(user==null || user=="null")
+            res.redirect('/auth');
+        else
+            res.render('buy', {
+                "user":JSON.stringify(user)
+            });
+    });
+});
 //---------------------------------------------/////-username
 solveddit.get('/user/:username', function(req, res){
     var username = req.params.username;
@@ -247,14 +258,32 @@ solveddit.get('/user/:username', function(req, res){
                                     "voted": rows[i].voted
                                 });
                             };
-                            res.render('user', {
-                                 user:JSON.stringify(user),
-                                 viewUserName:viewUser.name,
-                                 viewUserPoints:viewUser.points,
-                                 viewUserPointsEver:viewUser.points_ever,
-                                 questions:questions,
-                                 voterid: user.id
-                             });
+                            var extra = 'EXISTS(SELECT * FROM answervotes as av WHERE av.userid = "'+user.id+'" AND ans.id=av.answerid) as voted ';
+                            var query = 'SELECT *, ans.id as goodid, '+extra+' FROM answers as ans INNER JOIN users as u on u.id = ans.userid WHERE ans.questionid = "'+id+'"';
+                            db.all(query, function(err, rows){
+                                if(err==null){//no error
+                                    for (var i = 0; i < rows.length; i++) {
+                                        answers.push({
+                                            "id": rows[i].goodid,
+                                            "username": rows[i].name,
+                                            "userid": rows[i].userid,
+                                            "heading": rows[i].name,
+                                            "title": rows[i].title,
+                                            "text": rows[i].content,
+                                            "voted": rows[i].voted
+                                        });
+                                    };
+                                    res.render('user', {
+                                         user:JSON.stringify(user),
+                                         viewUserName:viewUser.name,
+                                         viewUserPoints:viewUser.points,
+                                         viewUserPointsEver:viewUser.points_ever,
+                                         questions:questions,
+                                         voterid: user.id,
+                                         answers:answers
+                                    });
+                                }
+                            });
                         }
                     });
                 }
@@ -342,9 +371,14 @@ solveddit.post('/api/question/vote', function(req, res){
     var userid = req.body.userid;
     var positive = req.body.positive;
     db.serialize(function(){
-        var query = 'INSERT INTO questionvotes (questionid, userid, positive) VALUES ('+questionid+', '+userid+', '+positive+')';
-        db.run(query, function(err){
-            if(err) res.send({status:400}); else res.send({status:200});
+        db.run('INSERT INTO questionvotes (questionid, userid, positive) VALUES ('+questionid+', '+userid+', '+positive+');', function(err){
+            if(err) res.send({status:400});
+            else{
+                db.run('UPDATE questions SET pointsadded = pointsadded + 1 WHERE id='+questionid+';', function(err){
+                    if(err) res.send({status:400});
+                    else res.send({status:200});
+                });
+            }
         });
     });
 });
@@ -354,7 +388,13 @@ solveddit.post('/api/question/unvote', function(req, res){
     var positive = req.body.positive;
     db.serialize(function(){
         db.run('DELETE FROM questionvotes WHERE questionid='+questionid+' AND userid='+userid+';', function(err){
-            if(err) res.send({status:400}); else res.send({status:200});
+            if(err) res.send({status:400});
+            else{
+                db.run('UPDATE questions SET pointsadded = pointsadded - 1 WHERE id='+questionid+';', function(err){
+                    if(err) res.send({status:400});
+                    else res.send({status:200});
+                });
+            }
         });
     });
 });
@@ -365,7 +405,13 @@ solveddit.post('/api/answer/vote', function(req, res){
     db.serialize(function(){
         var query = 'INSERT INTO answervotes (answerid, userid, positive) VALUES ('+answerid+', '+userid+', '+positive+')';
         db.run(query, function(err){
-            if(err) res.send({status:400}); else res.send({status:200});
+            if(err) res.send({status:400});
+            else{
+                db.run('UPDATE users SET points = points + 1, points_ever = points_ever + 1 WHERE id='+userid+';', function(err){
+                    if(err) res.send({status:400});
+                    else res.send({status:200});
+                });
+            }
         });
     });
 });
@@ -375,7 +421,13 @@ solveddit.post('/api/answer/unvote', function(req, res){
     var positive = req.body.positive;
     db.serialize(function(){
         db.run('DELETE FROM answervotes WHERE answerid='+answerid+' AND userid='+userid+';', function(err){
-            if(err) res.send({status:400}); else res.send({status:200});
+            if(err) res.send({status:400});
+            else{
+                db.run('UPDATE users SET points = points - 1, points_ever = points_ever - 1 WHERE id='+userid+';', function(err){
+                    if(err) res.send({status:400});
+                    else res.send({status:200});
+                });
+            }
         });
     });
 });

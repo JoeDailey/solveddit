@@ -32,15 +32,19 @@
 			<li id="tab_questions" class="active"><a href="#pane_questions" data-toggle="tab">Questions</a></li>
 			<li id="tab_answers "><a href="#pane_answers" data-toggle="tab">Answers</a></li>
 		</ul>
-		<!-- Tab panes -->
 		<div class="tab-content">
 			<div class="tab-pane fade active in" id="pane_questions">
 				<br />
 				<% questions.forEach(function(question){ %>
-				    <% include part_question %>
-				  <% }) %>
+				<% include part_question %>
+				<% }) %>
 			</div>
-			<div class="tab-pane fade" id="pane_answers">ANSERS</div>
+			<div class="tab-pane fade" id="pane_answers">
+				<br />
+				<% answers.forEach(function(answer){ %>
+			    <% include part_answer %>
+				<% }) %>
+			</div>
 		</div>
 	</div>
 
