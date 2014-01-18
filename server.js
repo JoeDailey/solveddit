@@ -11,6 +11,11 @@ var sqlite3 = require("sqlite3").verbose();
 var db = new sqlite3.Database(file);
 if (!exists) {
     db.serialize(function() {
+        db.run('CREATE TABLE "questions" ("id" INTEGER PRIMARY KEY  NOT NULL  UNIQUE, "userid" INTEGER, "content" VARCHAR(1024), "pointsadded" INTEGER, "created_at" DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP);');
+        db.run('CREATE TABLE "answers" ("id" INTEGER PRIMARY KEY  NOT NULL  UNIQUE, "userid" INTEGER, "questionid" INTEGER, "content" VARCHAR(1024), "created_at" DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP);');
+        //userid is who voted
+        db.run('CREATE TABLE "questionvotes" ("id" INTEGER PRIMARY KEY  NOT NULL  UNIQUE, "questionid" INTEGER, "userid" INTEGER, "positive" BOOLEAN, "created_at" DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP);');
+        db.run('CREATE TABLE "answervotes" ("id" INTEGER PRIMARY KEY  NOT NULL  UNIQUE, "answerid" INTEGER, "userid" INTEGER, "positive" BOOLEAN, "created_at" DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP);');
         db.run('CREATE TABLE "unregistered_users" ("id" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , "name" VARCHAR(70) NOT NULL , "email" VARCHAR(90) NOT NULL  UNIQUE , "password" VARCHAR(50) NOT NULL , "created_at" DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP);');
         db.run('CREATE TABLE "users" ("id" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , "name" VARCHAR(70) NOT NULL , "email" VARCHAR(90) NOT NULL  UNIQUE , "password" VARCHAR(50) NOT NULL , "created_at" DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP);');
     });
