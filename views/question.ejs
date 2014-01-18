@@ -3,5 +3,50 @@
     <h4>Comments</h4>
 	<% answers.forEach(function(answer){ %>
     <% include part_answer %>
-  <% }) %>
+	<% }) %>
+	<div class="row">
+		<form id="form-answer">
+			<div class="form-group col-md-12">
+		  		<textarea id="answer-text" rows="3" class="form-control" placeholder="Answer..."></textarea> 
+			</div>
+			<div class="form-group col-md-12">
+				<button type="submit" class="btn btn-default  col-xs-12 col-md-3">Submit</button>
+			</div>
+		</form>
+	</div>
+	<script type="text/javascript">
+		$(document).ready(function(){
+			$('#form-answer').submit(function(e){
+				e.preventDefault();
+				if(user == null || user == "null"){
+					document.location.href = "/auth";
+				}else{
+					var text = $('#answer-text');
+					text.removeClass("has-error");
+					if(text.val().length < 1){
+						text.addClass("has-error");
+					}else{
+						$.ajax({
+							type: "POST",
+							context: document.body,
+							url: '/api/answer',
+							data: {
+								"text":text.val(),
+								"questionid":<%= questionid %>,
+								"user":JSON.stringify(user)
+							},
+							dataType: "json",
+							completed: function(status){
+								console.log("complete");
+							},
+							success: function(a,b,c){
+								console.log("success!");
+								location.reload();
+							}
+						});
+					}
+				}
+			});
+		});
+	</script>
 <%include part_foot%>

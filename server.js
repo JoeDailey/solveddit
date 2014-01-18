@@ -37,8 +37,8 @@ if (!exists) {
 var $ = require('jQuery');
 //rendering/////////////////////////////////////////////////////////////////////////////// 
 var express = require('express');
-var captifeye = express();
-captifeye.set('view engine', 'ejs');
+var solveddit = express();
+solveddit.set('view engine', 'ejs');
 //email////////////////////////////////////////////////////////////////////////////////////
 var email_templates = require('email-templates');
 var nodemailer = require('nodemailer');
@@ -50,12 +50,12 @@ var mailer = nodemailer.createTransport("SMTP",{
    }
 });
 //path/////////////////////////////////////////////////////////////////////////////////////
-captifeye.use("/static", express.static(__dirname + '/static')); //static
+solveddit.use("/static", express.static(__dirname + '/static')); //static
 //cookies//////////////////////////////////////////////////////////////////////////////////
-captifeye.use(express.cookieParser('my secret here'));
+solveddit.use(express.cookieParser('my secret here'));
 //body parsing/////////////////////////////////////////////////////////////////////////////
-captifeye.use(express.bodyParser());
-captifeye.set('view options', {
+solveddit.use(express.bodyParser());
+solveddit.set('view options', {
     layout: false
 });
 //setup password encryption
@@ -79,12 +79,12 @@ var comparePassword = function(password, userPassword, callback) {
    });
 };
 //start server
-captifeye.listen(9000);
+solveddit.listen(9000);
 //Set Up End///////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////
 //RoutingStart///////////////////////////////////////////////////////////////////////////
 //---------------------------------------------/////-landing page
-captifeye.get('/', function(req, res){
+solveddit.get('/', function(req, res){
     getUser(req, function(user){
         var questions = []; 
         db.serialize(function(){
@@ -114,12 +114,13 @@ captifeye.get('/', function(req, res){
         });
     });
 });
-captifeye.get('/s/:sub', function(req, res){
+solveddit.get('/s/:sub', function(req, res){
     getUser(req, function(user){
         var questions = []; 
         db.serialize(function(){
             var extra = 'EXISTS(SELECT * FROM questionvotes as qv WHERE qv.userid = "'+user.id+'" AND q.id=qv.questionid) as voted ';
             var query = 'SELECT *, q.id as goodid, '+extra+' FROM questions as q INNER JOIN users as u on u.id = q.userid';
+            query += " INNER JOIN subs as s on s.id = q.subid WHERE s.name = '" + req.params.id + "'";
             db.all(query, function(err, rows){
                 if(err==null){//no error
                     for (var i = 0; i < rows.length; i++) {
@@ -142,47 +143,48 @@ captifeye.get('/s/:sub', function(req, res){
         });
     });
 });
-captifeye.get('/s/:sub/:id', function(req, res){
+solveddit.get('/s/:sub/:id', function(req, res){
     getUser(req, function(user){
         var answers = []; 
         var id = url2id(req.params.id);
         db.serialize(function(){
             var extra = 'EXISTS(SELECT * FROM questionvotes as qv WHERE qv.userid = "'+user.id+'" AND q.id=qv.questionid) as voted ';
             var query = 'SELECT *, q.id as goodid, '+extra+' FROM questions as q INNER JOIN users as u on u.id = q.userid WHERE q.id = "'+id+'" LIMIT 1';
-            db.all(query, function(err, rows){
+            db.get(query, function(err, row){
                 if(err==null){//no error
                         question = {
-                            "id": rows[0].goodid,
-                            "username": rows[0].username,
-                            "userid": rows[0].userid,
-                            "heading": rows[0].name,
-                            "title": rows[0].title,
-                            "text": rows[0].content,
-                            "voted": rows[0].voted
+                            "id": row.goodid,
+                            "username": row.username,
+                            "userid": row.userid,
+                            "heading": row.name,
+                            "title": row.title,
+                            "text": row.content,
+                            "voted": row.voted
                         };
-                     var extra = 'EXISTS(SELECT * FROM answervotes as av WHERE av.userid = "'+user.id+'" AND ans.id=av.answerid) as voted ';
+                    var extra = 'EXISTS(SELECT * FROM answervotes as av WHERE av.userid = "'+user.id+'" AND ans.id=av.answerid) as voted ';
                     var query = 'SELECT *, ans.id as goodid, '+extra+' FROM answers as ans INNER JOIN users as u on u.id = ans.userid WHERE ans.questionid = "'+id+'"';
                     console.log(query);
                     db.all(query, function(err, rows){
-                         if(err==null){//no error
-                         for (var i = 0; i < rows.length; i++) {
-                            answers.push({
-                                "id": rows[i].goodid,
-                                "username": rows[i].username,
-                                "userid": rows[i].userid,
-                                "heading": rows[i].name,
-                                "title": rows[i].title,
-                                "text": rows[i].content,
-                                "voted": rows[i].voted
+                        if(err==null){//no error
+                            for (var i = 0; i < rows.length; i++) {
+                                answers.push({
+                                    "id": rows[i].goodid,
+                                    "username": rows[i].username,
+                                    "userid": rows[i].userid,
+                                    "heading": rows[i].name,
+                                    "title": rows[i].title,
+                                    "text": rows[i].content,
+                                    "voted": rows[i].voted
+                                });
+                            };
+                            res.render("question", {
+                                user:JSON.stringify(user),
+                                question:question,
+                                questionid:question.id,
+                                answers:answers,
+                                voterid: user.id
                             });
-                        };
-                         res.render("question", {
-                            user:JSON.stringify(user),
-                            question:question,
-                            answers:answers,
-                            voterid: user.id
-                        });
-                     }
+                        }
                     });
                 }
             });
@@ -190,13 +192,13 @@ captifeye.get('/s/:sub/:id', function(req, res){
     });
 });
 //---------------------------------------------/////-signup + logins
-captifeye.get('/auth', function(req, res){
+solveddit.get('/auth', function(req, res){
     res.render("auth", {
         user:"null"
     });
 });
 //---------------------------------------------/////-username
-captifeye.get('/user/:username', function(req, res){
+solveddit.get('/user/:username', function(req, res){
     var username = req.params.username;
     getUser(req, function(user){
         db.serialize(function(){
@@ -221,7 +223,7 @@ captifeye.get('/user/:username', function(req, res){
                                     "voted": rows[i].voted
                                 });
                             };
-                             res.render('user', {
+                            res.render('user', {
                                  user:JSON.stringify(user),
                                  viewUserName:viewUser.name,
                                  viewUserPoints:viewUser.points,
@@ -236,9 +238,9 @@ captifeye.get('/user/:username', function(req, res){
         });
     });
 });
-captifeye.get('/ask', function(req, res){
+solveddit.get('/ask', function(req, res){
     getUser(req, function(user){
-        if(!user) res.redirect('/auth');
+        if(user==null || user=="null") res.redirect('/auth');
         else{
             res.render('ask', {
                 user:JSON.stringify(user)
@@ -250,7 +252,7 @@ captifeye.get('/ask', function(req, res){
 ///////////////////////////////////////////////////////////////////////////////////////////
 //Login/Logout Start//////////////////////////////////////////////////////////////////////
 //---------------------------------------------/////-login
-captifeye.post("/login", function(req, res){
+solveddit.post("/login", function(req, res){
     var name = req.body.username;
     var password = req.body.password;
     db.serialize(function(){
@@ -275,7 +277,7 @@ captifeye.post("/login", function(req, res){
     });
 });
 //---------------------------------------------/////-register
-captifeye.post("/register", function(req, res){
+solveddit.post("/register", function(req, res){
     var name = req.body.username;
     var password = req.body.password;
     db.serialize(function(){
@@ -303,14 +305,14 @@ captifeye.post("/register", function(req, res){
     });
 });
 //---------------------------------------------/////-logout
-captifeye.get('/logout', function(req, res){
+solveddit.get('/logout', function(req, res){
   res.clearCookie('name');
   res.redirect('/');
 });
 //Login/Logout END//////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
 //API Start///////////////////////////////////////////////////////////////////////////////
-captifeye.post('/api/question/vote', function(req, res){
+solveddit.post('/api/question/vote', function(req, res){
     var questionid = req.body.questionid;
     var userid = req.body.userid;
     var positive = req.body.positive;
@@ -321,7 +323,7 @@ captifeye.post('/api/question/vote', function(req, res){
         });
     });
 });
-captifeye.post('/api/question/unvote', function(req, res){
+solveddit.post('/api/question/unvote', function(req, res){
     var questionid = req.body.questionid;
     var userid = req.body.userid;
     var positive = req.body.positive;
@@ -331,7 +333,7 @@ captifeye.post('/api/question/unvote', function(req, res){
         });
     });
 });
-captifeye.post('/api/answer/vote', function(req, res){
+solveddit.post('/api/answer/vote', function(req, res){
     var answerid = req.body.answerid;
     var userid = req.body.userid;
     var positive = req.body.positive;
@@ -343,7 +345,7 @@ captifeye.post('/api/answer/vote', function(req, res){
         });
     });
 });
-captifeye.post('/api/answer/unvote', function(req, res){
+solveddit.post('/api/answer/unvote', function(req, res){
     var answerid = req.body.answerid;
     var userid = req.body.userid;
     var positive = req.body.positive;
@@ -353,7 +355,7 @@ captifeye.post('/api/answer/unvote', function(req, res){
         });
     });
 });
-captifeye.post('/api/ask', function(req, res){
+solveddit.post('/api/ask', function(req, res){
     var title = req.body.title;
     var text = req.body.text;
     var subName = req.body.sub;
@@ -372,7 +374,7 @@ console.log(title +", "+text +", "+subName +", "+user);
                             if(err || newQuest==undefined) {console.log(newQuest); res.send(500);}
                             else{
                                 var url = '/s/'+subName+'/'+id2url(newQuest.id);
-                                res.send({statusCode:200, statusText:url})
+                                res.send({statusCode:200, statusText:url});
                             }
                         });
                     }
@@ -381,23 +383,23 @@ console.log(title +", "+text +", "+subName +", "+user);
         });
     });
 });
-captifeye.post('/api/answer', function(req, res){
+solveddit.post('/api/answer', function(req, res){
     var text = req.body.text;
     var questionid = req.body.questionid;
     var user = JSON.parse(req.body.user);
     db.serialize(function(){
-            db.run('INSERT INTO answers (content, userid, questionid) VALUES ("'+text+'", '+user.id+', '+questionid+');', function(insertErr){
-                if(insertErr) res.send(500);
-                else{
-                     res.send({statusCode:200});
-                 }
-            });
+        db.run('INSERT INTO answers (content, userid, questionid) VALUES ("'+text+'", '+user.id+', '+questionid+');', function(insertErr){
+            if(insertErr) res.send(500);
+            else{
+                res.send({statusCode:200});
+            }
         });
     });
+});
 //API End///////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
 //404 Error start/////////////////////////////////////////////////////////////////////////
-captifeye.get("*", function(req, res){
+solveddit.get("*", function(req, res){
     getUser(req, function(user){
         res.render('error', {
             "user":JSON.stringify(user),
