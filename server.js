@@ -19,10 +19,11 @@ if (!exists) {
         db.run('CREATE TABLE "answervotes" ("id" INTEGER PRIMARY KEY  NOT NULL  UNIQUE, "answerid" INTEGER, "userid" INTEGER, "positive" BOOLEAN, "created_at" DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP);');
         db.run('CREATE TABLE "users" ("id" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , "name" VARCHAR(70) NOT NULL UNIQUE, "password" VARCHAR(61) NOT NULL, "points" INTEGER NOT NULL  DEFAULT 0, "points_ever" INTEGER NOT NULL  DEFAULT 0, "created_at" DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP);');
         //fake data, username: lucasmullens password password
+        db.run('INSERT INTO "subs" ("name") VALUES ("doge")');
         db.run('INSERT INTO "users" VALUES ("1","lucasmullens","$2a$10$hLxg2Kn0WB0H6gKnLFGfYeohxfJl193NM9OSbRRu3XlYPWiE/En1q","0","0","2014-01-18 10:23:49");');
         db.run('INSERT INTO "users" VALUES ("2","Steve","$2a$10$hLxg2Kn0WB0H6gKnLFGfYeohxfJl193NM9OSbRRu3XlYPWiE/En1q","0","0","2014-01-18 10:23:49");');
-        db.run("INSERT INTO questions (userid, content) VALUES (1,'Whats up?'); ");
-        db.run("INSERT INTO questions (userid, content) VALUES (2,'Why is there no red bull?'); ");
+        db.run("INSERT INTO questions (userid, title, content, subid) VALUES (1,'hey','Whats up?','doge'); ");
+        db.run("INSERT INTO questions (userid, title, content, subid) VALUES (2,'so about mhacks','Why is there no red bull?','doge'); ");
         db.run("INSERT INTO answers (userid, questionid, content) VALUES (1, 1, 'Nothing much'); ");
         db.run("INSERT INTO answers (userid, questionid, content) VALUES (2, 1, 'Hey'); ");
         db.run("INSERT INTO answers (userid, questionid, content) VALUES (1, 2, 'Cause mhacks is terrible'); ");
