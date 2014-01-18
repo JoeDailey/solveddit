@@ -11,9 +11,10 @@ var sqlite3 = require("sqlite3").verbose();
 var db = new sqlite3.Database(file);
 if (!exists) {
     db.serialize(function() {
-        db.run('CREATE TABLE "questions" ("id" INTEGER PRIMARY KEY  NOT NULL  UNIQUE, "userid" INTEGER, "content" VARCHAR(1024), "pointsadded" INTEGER, "created_at" DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP);');
+        db.run('CREATE TABLE "questions" ("id" INTEGER PRIMARY KEY  NOT NULL  UNIQUE, "userid" INTEGER, "title" VARCHAR(140) NOT NULL, "content" VARCHAR(1024), "pointsadded" INTEGER, "subid" INTEGER NOT NULL, "created_at" DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP);');
         db.run('CREATE TABLE "answers" ("id" INTEGER PRIMARY KEY  NOT NULL  UNIQUE, "userid" INTEGER, "questionid" INTEGER, "content" VARCHAR(1024), "created_at" DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP);');
         //userid is who voted
+        db.run('CREATE TABLE "subs" ("id" INTEGER PRIMARY KEY  NOT NULL  UNIQUE, "name" VARCHAR(50) NOT NULL UNIQUE, "created_at" DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP);');
         db.run('CREATE TABLE "questionvotes" ("id" INTEGER PRIMARY KEY  NOT NULL  UNIQUE, "questionid" INTEGER, "userid" INTEGER, "positive" BOOLEAN, "created_at" DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP);');
         db.run('CREATE TABLE "answervotes" ("id" INTEGER PRIMARY KEY  NOT NULL  UNIQUE, "answerid" INTEGER, "userid" INTEGER, "positive" BOOLEAN, "created_at" DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP);');
         db.run('CREATE TABLE "users" ("id" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , "name" VARCHAR(70) NOT NULL UNIQUE, "password" VARCHAR(61) NOT NULL, "points" INTEGER NOT NULL  DEFAULT 0, "points_ever" INTEGER NOT NULL  DEFAULT 0, "created_at" DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP);');
@@ -137,6 +138,7 @@ captifeye.get('/user/:username', function(req, res){
                                     "username": rows[i].username,
                                     "userid": rows[i].userid,
                                     "heading": rows[i].name,
+                                    "title": rows[i].title,
                                     "text": rows[i].content,
                                     "voted": rows[i].voted
                                 });
@@ -283,7 +285,7 @@ console.log(title +", "+text +", "+subName +", "+user);
 captifeye.get("*", function(req, res){
     getUser(req, function(user){
         res.render('error', {
-            "user":user,
+            "user":JSON.stringify(user),
             "errorNumber":404,
             "errorMessage":"sorry, lulz"
         });
