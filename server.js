@@ -192,7 +192,22 @@ captifeye.get('/logout', function(req, res){
 //Login/Logout END//////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
 //API Start///////////////////////////////////////////////////////////////////////////////
-
+captifeye.post('/api/question/vote', function(req, res){
+    var questionid = req.body.questionid;
+    var userid = req.body.userid;
+    var positive = req.body.positive;
+    db.serialize(function(){
+        db.run('INSERT INTO questionvotes (questionid, userid, positive) VALUES ('+questionid+', '+userid+', '+positive+')');
+    });
+});
+captifeye.post('/api/question/unvote', function(req, res){
+    var questionid = req.body.questionid;
+    var userid = req.body.userid;
+    var positive = req.body.positive;
+    db.serialize(function(){
+        db.run('DELETE FROM questionvotes WHERE questionid='+questionid+' AND userid='+userid+';');
+    });
+});
 //API End///////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
 //404 Error start/////////////////////////////////////////////////////////////////////////
