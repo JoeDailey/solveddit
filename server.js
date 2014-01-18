@@ -255,15 +255,23 @@ captifeye.post('/api/ask', function(req, res){
     var title = req.body.title;
     var text = req.body.text;
     var subName = req.body.sub;
-    var user = req.body.user;
+    var user = JSON.parse(req.body.user);
+console.log(title +", "+text +", "+subName +", "+user);
     db.serialize(function(){
         db.get('SELECT * FROM subs WHERE name="'+subName+'";', function(subErr, sub){
             if(subErr || sub==undefined) res.send(404);
             else{
-                db.get('INSERT INTO questions (title, content, userid, subid) VALUES ("'+title+'", "'+text+'", '+user.id+', '+sub.id+'); SELECT * FROM questions order by id desc limit 1;', function(err, newQuest){
-                    if(err || newQuest==undefined) {console.log(newQuest); res.send(500);}
-                    else
-                        res.redirect('/'+subName+'/'+id2url(quest.id));
+                db.run('INSERT INTO questions (title, content, userid, subid) VALUES ("'+title+'", "'+text+'", '+user.id+', '+sub.id+');', function(insertErr){
+                    if(insertErr) res.send(500);
+                    else{
+                        db.get('SELECT * FROM questions order by id desc limit 1;', function(err, newQuest){
+                            if(err || newQuest==undefined) {console.log(newQuest); res.send(500);}
+                            else{
+                                var url = '/s/'+subName+'/'+id2url(newQuest.id);
+                                res.send({statusCode:200, statusText:url})
+                            }
+                        });
+                    }
                 });
             }
         });
