@@ -110,7 +110,6 @@ solveddit.get('/', function(req, res){
             var query = 'SELECT *, q.id as goodid, '+extra+' FROM questions as q INNER JOIN users as u on u.id = q.userid';
             query += " INNER JOIN (SELECT name as subname, id as sid FROM subs) as s on sid = q.subid";
             query += formula;
-            console.log(query);
             db.all(query, function(err, rows){
                 if(err==null){//no error
                     for (var i = 0; i < rows.length; i++) {
@@ -144,7 +143,6 @@ solveddit.get('/s/:sub', function(req, res){
             var query = 'SELECT *, q.id as goodid, '+extra+' FROM questions as q INNER JOIN users as u on u.id = q.userid';
             query += " INNER JOIN (SELECT name as subname, id as sid FROM subs) as s on sid = q.subid WHERE subname = '" + req.params.sub + "'";
             query += formula;
-            console.log(query);
             db.all(query, function(err, rows){
                 if(err==null){//no error
                     for (var i = 0; i < rows.length; i++) {
@@ -249,7 +247,7 @@ solveddit.get('/user/:username', function(req, res){
                     var extra = 'EXISTS(SELECT * FROM questionvotes as qv WHERE qv.userid = "'+user.id+'" AND q.id=qv.questionid) as voted ';
                     var query = 'SELECT *, '+extra+' FROM questions as q INNER JOIN users as u on u.id = q.userid';
                     query += " INNER JOIN (SELECT name as subname, id as sid FROM subs) as s on sid = q.subid  WHERE u.name = \""+username+"\" ORDER BY created_at DESC";
-                    console.log(query);
+                    
                     db.all(query, function(err, rows){
                         if(err==null){//no error
                             for (var i = 0; i < rows.length; i++) {
@@ -509,10 +507,12 @@ var getUser = function(req, callback){
                         // else{
                             var data = {
                                 "id":user.id,
+                                "points":user.points,
                                 "username":user.name,
                                 "notificationCount":0,//notes.length,
                                 "points":user.points
                             };
+                            console.log(user);
                             callback(data);
                         // }
                     // });
