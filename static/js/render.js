@@ -48,7 +48,7 @@ $(document).ready(function(){
 				},
 				dataType: "json",
 				complete: function(){
-					document.location.reload();
+					//document.location.reload();
 				}
 			});
 		}

@@ -21,17 +21,21 @@ if (!exists) {
         db.run('CREATE TABLE "sitedata" ("views" INTEGER);');
         db.run('INSERT INTO "sitedata" ("views") VALUES (1000)');
         //fake data, username: lucasmullens password password
-        db.run('INSERT INTO "subs" ("name") VALUES ("doge")');
-        db.run('INSERT INTO "subs" ("name") VALUES ("funny")');
+        db.run('INSERT INTO "subs" ("name") VALUES ("Medicine")');
+        db.run('INSERT INTO "subs" ("name") VALUES ("Coding")');
+        db.run('INSERT INTO "subs" ("name") VALUES ("Relationships")');
         db.run('INSERT INTO "users" VALUES ("1","lucasmullens","$2a$10$hLxg2Kn0WB0H6gKnLFGfYeohxfJl193NM9OSbRRu3XlYPWiE/En1q","0","0","2014-01-18 10:23:49");');
         db.run('INSERT INTO "users" VALUES ("2","Steve","$2a$10$hLxg2Kn0WB0H6gKnLFGfYeohxfJl193NM9OSbRRu3XlYPWiE/En1q","0","0","2014-01-18 10:23:49");');
-        db.run("INSERT INTO questions (userid, title, content, subid, pointsadded,views_at_creation) VALUES (1,'hey','Whats up?',1, 0, 1000); ");
-        db.run("INSERT INTO questions (userid, title, content, subid, pointsadded,views_at_creation) VALUES (2,'so about mhacks','Why is there no red bull?',1, 0, 1000); ");
-        db.run("INSERT INTO questions (userid, title, content, subid, pointsadded,views_at_creation) VALUES (2,'What is funny?','I dont know',2, 0, 1000); ");
-        db.run("INSERT INTO answers (userid, questionid, content) VALUES (1, 1, 'Nothing much'); ");
-        db.run("INSERT INTO answers (userid, questionid, content) VALUES (2, 1, 'Hey'); ");
-        db.run("INSERT INTO answers (userid, questionid, content) VALUES (1, 2, 'Cause mhacks is terrible'); ");
-        db.run("INSERT INTO answers (userid, questionid, content) VALUES (2, 2, 'Screw mhacks'); ");
+        db.run('INSERT INTO "users" VALUES ("3","Paul","$2a$10$hLxg2Kn0WB0H6gKnLFGfYeohxfJl193NM9OSbRRu3XlYPWiE/En1q","0","0","2014-01-18 10:23:49");');
+        db.run("INSERT INTO questions (userid, title, content, subid, pointsadded,views_at_creation) VALUES (1,'I fell out of a tree and my arm is purple. What do I do?','Please help.',1, 0, 1000); ");
+        db.run("INSERT INTO questions (userid, title, content, subid, pointsadded,views_at_creation) VALUES (3,'How do I set up Android in Eclipse?','This has been frustrating me for hours. Any ideas?',2, 0, 1000); ");
+        db.run("INSERT INTO questions (userid, title, content, subid, pointsadded,views_at_creation) VALUES (3,'My girlfriend has been lying to me. What should I do?','This is just so stressful and I do not know what to do',3, 0, 1000); ");
+        db.run("INSERT INTO answers (userid, questionid, content) VALUES (3, 1, 'Go to a doctor. You broke your arm.'); ");
+        db.run("INSERT INTO answers (userid, questionid, content) VALUES (1, 2, 'Install the Android ADT.'); ");
+        db.run("INSERT INTO answers (userid, questionid, content) VALUES (1, 3, 'Talk to her about it.'); ");
+        db.run("INSERT INTO answers (userid, questionid, content) VALUES (2, 1, 'Ohhh you are fine just take some Tylenol.'); ");
+        db.run("INSERT INTO answers (userid, questionid, content) VALUES (3, 2, 'Give up. Eclipse is terrible.'); ");
+        db.run("INSERT INTO answers (userid, questionid, content) VALUES (2, 3, 'Lie back at her.'); ");
     });
 }
 /////////END CREATE DATABASE
@@ -201,6 +205,7 @@ solveddit.get('/s/:sub/:id', function(req, res){
                                     "userid": rows[i].userid,
                                     "heading": rows[i].name,
                                     "title": rows[i].title,
+                                    "sub": req.params.sub,
                                     "text": rows[i].content,
                                     "voted": rows[i].voted
                                 });
@@ -246,13 +251,13 @@ solveddit.get('/user/:username', function(req, res){
                     var questions = [];
                     var answers = [];
                     var extra = 'EXISTS(SELECT * FROM questionvotes as qv WHERE qv.userid = "'+user.id+'" AND q.id=qv.questionid) as voted ';
-                    var query = 'SELECT *, '+extra+' FROM questions as q INNER JOIN users as u on u.id = q.userid';
+                    var query = 'SELECT *, q.id as goodid, '+extra+' FROM questions as q INNER JOIN users as u on u.id = q.userid';
                     query += " INNER JOIN (SELECT name as subname, id as sid FROM subs) as s on sid = q.subid  WHERE u.name = \""+username+"\" ORDER BY created_at DESC";
                     db.all(query, function(err, rows){
                         if(err==null){//no error
                             for (var i = 0; i < rows.length; i++) {
                                 questions.push({
-                                    "id": rows[i].id,
+                                    "id": rows[i].goodid,
                                     "username": rows[i].username,
                                     "userid": rows[i].userid,
                                     "heading": rows[i].name,
@@ -418,7 +423,7 @@ solveddit.post('/api/answer/vote', function(req, res){
         db.run(query, function(err){
             if(err) res.send({status:400});
             else{
-                qid = "(SELECT userid FROM questions WHERE id='"+questionid+"')";
+                qid = "(SELECT userid FROM answers WHERE id='"+answerid+"')";
                 db.run('UPDATE users SET points = points + 1, points_ever = points_ever + 1 WHERE id='+qid+';', function(err){
 
                     if(err) res.send({status:400});
@@ -437,7 +442,7 @@ solveddit.post('/api/answer/unvote', function(req, res){
         db.run('DELETE FROM answervotes WHERE answerid='+answerid+' AND userid='+userid+';', function(err){
             if(err) res.send({status:400});
             else{
-                qid = "(SELECT userid FROM questions WHERE id='"+questionid+"')";
+                qid = "(SELECT userid FROM answers WHERE id='"+answerid+"')";
                 db.run('UPDATE users SET points = points - 1, points_ever = points_ever - 1 WHERE id='+qid+';', function(err){
                     if(err) res.send({status:400});
                     else res.send({status:200});
@@ -488,7 +493,7 @@ solveddit.post('/api/answer', function(req, res){
 solveddit.post('/api/givebonus', function(req, res){
     var user = JSON.parse(req.body.sender);
     var rec_id = req.body.reciever;
-    var quest_id = req.body.question_id;
+    var quest_id = req.body.questionid;
     var points = req.body.points;
     console.log(user +", "+ rec_id +", "+ quest_id);
     db.serialize(function(){

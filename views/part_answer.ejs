@@ -1,7 +1,7 @@
 <div class="panel panel-default">
   <div class="panel-body">
  
-	<div class="left"><%=answer.username%></div><br />
+	<div class="left"><a href="/user/<%=answer.username%>"><%=answer.username%></a></div><br />
     <button type="button" class="left-half btn btn-default <% if (answer.voted) {%>  btn-success  <%}%>" id="upvoteanswer<%=answer.id%>">
 			<span class="glyphicon glyphicon-star"></span>
 	</button>
