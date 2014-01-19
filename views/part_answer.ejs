@@ -1,11 +1,11 @@
 <div class="panel panel-default">
   <div class="panel-body">
  
+	<div class="left"><%=answer.username%></div><br />
     <button type="button" class="left-half btn btn-default <% if (answer.voted) {%>  btn-success  <%}%>" id="upvoteanswer<%=answer.id%>">
 			<span class="glyphicon glyphicon-star"></span>
 	</button>
-	<div class="right-half">&nbsp;<%=answer.text%></div>
-	<div class="left"><%=answer.username%></div>
+	<div class="right-half">&nbsp;<a href="/s/<%=answer.sub%>/<%=answer.questionid%>"><%=answer.text%></a></div>
 	<script type="text/javascript">
 	$(function(){
 		$("#upvoteanswer<%=answer.id%>").click(function(){
