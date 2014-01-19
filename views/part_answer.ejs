@@ -4,7 +4,8 @@
     <button type="button" class="left-half btn btn-default <% if (answer.voted) {%>  btn-success  <%}%>" id="upvoteanswer<%=answer.id%>">
 			<span class="glyphicon glyphicon-star"></span>
 	</button>
-		<div class="right-half">&nbsp;<%=answer.text%></div>
+	<div class="right-half">&nbsp;<%=answer.text%></div>
+	<div class="left"><%=answer.username%></div>
 	<script type="text/javascript">
 	$(function(){
 		$("#upvoteanswer<%=answer.id%>").click(function(){
