@@ -89,7 +89,7 @@ var comparePassword = function(password, userPassword, callback) {
    });
 };
 //start server
-solveddit.listen(9000);
+solveddit.listen(80);
 var consta = 5;
 var constb = 3;
 var constc = .01;
