@@ -266,6 +266,7 @@ solveddit.get('/user/:username', function(req, res){
                             };
                             var extra = 'EXISTS(SELECT * FROM answervotes as av WHERE av.userid = "'+user.id+'" AND ans.id=av.answerid) as voted ';
                             var query = 'SELECT *, ans.id as goodid, '+extra+' FROM answers as ans INNER JOIN users as u on u.id = ans.userid WHERE u.name = "'+username+'"';
+
                             db.all(query, function(err, rows){
                                 if(err==null){//no error
                                     for (var i = 0; i < rows.length; i++) {
@@ -415,6 +416,7 @@ solveddit.post('/api/answer/vote', function(req, res){
             else{
                 qid = "(SELECT userid FROM questions WHERE id='"+questionid+"')";
                 db.run('UPDATE users SET points = points + 1, points_ever = points_ever + 1 WHERE id='+qid+';', function(err){
+
                     if(err) res.send({status:400});
                     else res.send({status:200});
                 });
