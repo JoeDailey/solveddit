@@ -249,7 +249,6 @@ solveddit.get('/user/:username', function(req, res){
                     var extra = 'EXISTS(SELECT * FROM questionvotes as qv WHERE qv.userid = "'+user.id+'" AND q.id=qv.questionid) as voted ';
                     var query = 'SELECT *, '+extra+' FROM questions as q INNER JOIN users as u on u.id = q.userid';
                     query += " INNER JOIN (SELECT name as subname, id as sid FROM subs) as s on sid = q.subid  WHERE u.name = \""+username+"\" ORDER BY created_at DESC";
-                    console.log(query);
                     db.all(query, function(err, rows){
                         if(err==null){//no error
                             for (var i = 0; i < rows.length; i++) {
@@ -265,8 +264,11 @@ solveddit.get('/user/:username', function(req, res){
                                 });
                             };
                             var extra = 'EXISTS(SELECT * FROM answervotes as av WHERE av.userid = "'+user.id+'" AND ans.id=av.answerid) as voted ';
-                            var query = 'SELECT *, ans.id as goodid, '+extra+' FROM answers as ans INNER JOIN users as u on u.id = ans.userid WHERE u.name = "'+username+'"';
+                            var query = 'SELECT *, ans.id as goodid, '+extra+' FROM answers as ans INNER JOIN users as u on u.id = ans.userid';
+                            var whichsub = "(SELECT q.subid FROM questions as q WHERE q.id = ans.questionid)"
+                            query += " INNER JOIN (SELECT name as subname, id as sid FROM subs) as s on sid = "+whichsub+"  WHERE u.name = \""+username+"\" ORDER BY created_at DESC";
 
+                    console.log(query);
                             db.all(query, function(err, rows){
                                 if(err==null){//no error
                                     for (var i = 0; i < rows.length; i++) {
@@ -276,6 +278,8 @@ solveddit.get('/user/:username', function(req, res){
                                             "userid": rows[i].userid,
                                             "heading": rows[i].name,
                                             "title": rows[i].title,
+                                            "sub": rows[i].subname,
+                                            "questionid": rows[i].questionid,
                                             "text": rows[i].content,
                                             "voted": rows[i].voted
                                         });
