@@ -1,7 +1,7 @@
 <div class="panel panel-default">
 	<div class="panel-heading">
 	    <h3 class="panel-title"><a href="/user/<%=question.heading%>"><%=question.heading%></a> &raquo; <a href="/s/<%=question.sub%>"><%=question.sub%></a>
-			<button type="button" style="float:right;margin-top:-5px;" class="right right-half btn btn-default bonus-button-comf">
+			<button type="button" question-id="<%=question.id%>" style="float:right;margin-top:-5px;" class="right right-half btn btn-default bonus-button-comf">
 				<span class="glyphicon glyphicon-ok"></span>
 			</button>
 		  	<button type="button" style="float:right;margin-top:-5px;" class="right right-half btn btn-default bonus-button">
@@ -9,20 +9,13 @@
 			</button>
 		</h3>
 	</div>
-<style type="text/css">
-	.slider{
-		width: 98%;
-		margin-left: 1%;
-		margin-top: 1%;
-	}
-</style>
-<input type="text" class="slider" value="" data-slider-min="0" data-slider-max="<%= user.points %>" data-slider-step="1" data-slider-value="0" data-slider-orientation="horizontal" data-slider-selection="after" data-slider-tooltip="show">
+	<input type="text" class="bonus-slider" value="" data-slider-min="0" data-slider-max="<%= user.points %>" data-slider-step="1" data-slider-value="0" data-slider-orientation="horizontal" data-slider-selection="after" data-slider-tooltip="show">
   <div class="panel-body">
 	<div>
 	    <button type="button" class="left-half btn btn-default <% if (question.voted) {%>  btn-success  <%}%>" id="upvote<%=question.id%>">
 			<span class="glyphicon glyphicon-star"></span>
 		</button>
-		<div class="right-half">&nbsp;<a href="/s/<%=question.sub%>/<%=question.id%>"><%=question.title%></a></div>
+		<div class="right-half">&nbsp;<a class="question-link" href="/s/<%=question.sub%>/<%=question.id%>"><%=question.title%></a></div>
 	</div>
 	<div style="margin-top:3px;">
 		<button type="button" class="left-half btn btn-default text-toggler">

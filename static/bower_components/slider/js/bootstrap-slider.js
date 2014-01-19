@@ -18,7 +18,6 @@
  * ========================================================= */
  
 !function( $ ) {
-
 	var Slider = function(element, options) {
 		this.element = $(element);
 		this.picker = $('<div class="slider">'+
@@ -70,6 +69,7 @@
 		this.max = this.element.data('slider-max')||options.max;
 		this.step = this.element.data('slider-step')||options.step;
 		this.value = this.element.data('slider-value')||options.value;
+		finalValue = this.value;
 		if (this.value[1]) {
 			this.range = true;
 		}
@@ -144,6 +144,7 @@
 		} else {
 			this.tooltip.addClass('hide');
 		}
+		this.calculateValue();
 	};
 
 	Slider.prototype = {
@@ -229,6 +230,7 @@
 
 			this.inDrag = true;
 			var val = this.calculateValue();
+
 			this.element.trigger({
 					type: 'slideStart',
 					value: val
@@ -259,6 +261,7 @@
 			this.percentage[this.dragged] = percentage;
 			this.layout();
 			var val = this.calculateValue();
+
 			this.element
 				.trigger({
 					type: 'slide',
@@ -311,6 +314,7 @@
 				val = (this.min + Math.round((this.diff * this.percentage[0]/100)/this.step)*this.step);
 				this.value = [val, this.value[1]];
 			}
+			grandVal = val;
 			return val;
 		},
 
@@ -368,6 +372,10 @@
 			}
 		})
 	};
+	$.fn.sliderValue = function(){
+		return grandVal;
+	};
+	var grandVal;
 
 	$.fn.slider.defaults = {
 		min: 0,

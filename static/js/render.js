@@ -20,7 +20,9 @@ $(document).ready(function(){
 			}
 		}
 	});
-	$('.slider').slider();
+
+	$('.bonus-slider').attr("data-slider-max", user.points);
+	$('.bonus-slider').slider();
 	$('.slider').css({
 		"width":"96%",
 		"margin-left":"2%",
@@ -28,4 +30,27 @@ $(document).ready(function(){
 	});
 	$('.bonus-button-comf').hide();
 	$('.slider').hide();
+	$('.bonus-button-comf').click(function(){
+		var question_id = $(this).attr("question-id");
+		var points = $($($($($(this).parent()).parent()).parent()).children('.slider')).sliderValue();
+		console.log(points);
+		console.log(question_id);
+		var ok = confirm("This action is non-reversable. Are you sure?");
+		if(ok){
+			$.ajax({
+				type: "POST",
+				context: document.body,
+				url: '/api/givebonus',
+				data: {
+					sender:JSON.stringify(user),
+					questionid:question_id,
+					"points":points
+				},
+				dataType: "json",
+				complete: function(){
+					document.location.reload();
+				}
+			});
+		}
+	});
 });

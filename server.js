@@ -196,6 +196,7 @@ solveddit.get('/s/:sub/:id', function(req, res){
                             for (var i = 0; i < rows.length; i++) {
                                 answers.push({
                                     "id": rows[i].goodid,
+                                    "questionid":rows[i].questionid,
                                     "username": rows[i].name,
                                     "userid": rows[i].userid,
                                     "heading": rows[i].name,
@@ -411,6 +412,7 @@ solveddit.post('/api/answer/vote', function(req, res){
     var answerid = req.body.answerid;
     var userid = req.body.userid;
     var positive = req.body.positive;
+    var questionid = req.body.questionid;
     db.serialize(function(){
         var query = 'INSERT INTO answervotes (answerid, userid, positive) VALUES ('+answerid+', '+userid+', '+positive+')';
         db.run(query, function(err){
@@ -430,6 +432,7 @@ solveddit.post('/api/answer/unvote', function(req, res){
     var answerid = req.body.answerid;
     var userid = req.body.userid;
     var positive = req.body.positive;
+    var questionid = req.body.questionid;
     db.serialize(function(){
         db.run('DELETE FROM answervotes WHERE answerid='+answerid+' AND userid='+userid+';', function(err){
             if(err) res.send({status:400});
@@ -479,6 +482,23 @@ solveddit.post('/api/answer', function(req, res){
             else{
                 res.send({statusCode:200});
             }
+        });
+    });
+});
+solveddit.post('/api/givebonus', function(req, res){
+    var user = JSON.parse(req.body.sender);
+    var rec_id = req.body.reciever;
+    var quest_id = req.body.question_id;
+    var points = req.body.points;
+    console.log(user +", "+ rec_id +", "+ quest_id);
+    db.serialize(function(){
+        db.run('UPDATE users SET points = points - '+points+' WHERE id='+user.id+';', function(insertErr){
+            db.run('UPDATE questions SET pointsadded = pointsadded + '+points+' WHERE id='+quest_id+';', function(){
+                if(insertErr) res.send(500);
+                else{
+                    res.send({statusCode:200});
+                }
+            });
         });
     });
 });
