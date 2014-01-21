@@ -175,7 +175,7 @@ solveddit.get('/s/:sub', function(req, res){
 solveddit.get('/s/:sub/:id', function(req, res){
     getUser(req, function(user){
         var answers = []; 
-        var id = url2id(req.params.id);
+        var id = (req.params.id);
         db.serialize(function(){
             var extra = 'EXISTS(SELECT * FROM questionvotes as qv WHERE qv.userid = "'+user.id+'" AND q.id=qv.questionid) as voted ';
             var query = 'SELECT *, q.id as goodid, '+extra+' FROM questions as q INNER JOIN users as u on u.id = q.userid WHERE q.id = "'+id+'" LIMIT 1';
