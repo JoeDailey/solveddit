@@ -1,12 +1,13 @@
 <div class="panel panel-default">
 	<div class="panel-heading">
 	    <h3 class="panel-title"><a href="/user/<%=question.heading%>"><%=question.heading%></a> &raquo; <a href="/s/<%=question.sub%>"><%=question.sub%></a>
-			<button type="button" question-id="<%=question.id%>" style="float:right;margin-top:-5px;" class="right right-half btn btn-default bonus-button-comf">
-				<span class="glyphicon glyphicon-ok"></span>
+			<button type="button" question-id="<%=question.id%>" class="btn btn-default btn-sm pull-right  bonus-button-comf">
+				<span class="glyphicon glyphicon-ok"></span> Done
 			</button>
-		  	<button type="button" style="float:right;margin-top:-5px;" class="right right-half btn btn-default bonus-button">
-				<span class="glyphicon glyphicon-usd"></span>
+		  	<button type="button"  style="margin-right:4px;" class="btn btn-default btn-sm pull-right bonus-button">
+				<span class="glyphicon glyphicon-usd"></span> Spend Points
 			</button>
+			<div style="clear:both;"></div>
 		</h3>
 	</div>
 		<input type="text" class="bonus-slider" value="" data-slider-min="0" data-slider-max="<%= user.points %>" data-slider-step="1" data-slider-value="0" data-slider-orientation="horizontal" data-slider-selection="after" data-slider-tooltip="show">
